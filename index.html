@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#e8491d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Howie Helper" />
+<title>Howie Helper</title>
+<style>
+  :root{
+    --bg:#14110f; --panel:#211c19; --panel2:#2c2521; --line:#3a322c;
+    --ink:#f4efe9; --muted:#a8998c; --accent:#e8491d; --accent2:#f3a712;
+    --good:#3fb56b; --danger:#d6493a;
+    --radius:14px; --tap:#3a322c;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px; line-height:1.35; overscroll-behavior-y:none;
+    -webkit-text-size-adjust:100%;
+  }
+  #app{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;}
+  button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none;}
+  .hidden{display:none !important;}
+
+  /* App bar */
+  .bar{
+    position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#1b1714,#1b1714ee);
+    backdrop-filter:saturate(140%) blur(6px);
+    padding:calc(var(--safe-t) + 10px) 14px 10px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;
+  }
+  .bar h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px;flex:1;}
+  .bar .sub{font-size:12px;color:var(--muted);font-weight:500;}
+  .iconbtn{width:40px;height:40px;border-radius:10px;background:var(--panel2);display:flex;
+    align-items:center;justify-content:center;font-size:19px;flex:none;}
+  .iconbtn:active{background:var(--tap);}
+
+  main{flex:1;padding:14px;padding-bottom:calc(96px + var(--safe-b));}
+  main.nofooter{padding-bottom:calc(20px + var(--safe-b));}
+
+  /* ---------- Home screen (tool launcher) ---------- */
+  .home-intro{color:var(--muted);font-size:13px;margin:2px 2px 14px;}
+  .toolrow{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+  .toolrow:active{background:var(--panel2);}
+  .toolrow.soon{opacity:.55;}
+  .toolrow.soon:active{background:var(--panel);}
+  .toolrow .ic{width:46px;height:46px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;}
+  .toolrow .meta{flex:1;min-width:0;}
+  .toolrow .meta b{font-weight:700;font-size:16px;display:block;}
+  .toolrow .meta small{color:var(--muted);font-size:12.5px;display:block;margin-top:2px;}
+  .toolrow .right{flex:none;display:flex;align-items:center;gap:8px;}
+  .toolrow .chev{color:var(--muted);font-size:20px;}
+  .badge{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-weight:700;}
+  .home-settings{margin-top:18px;border-top:1px solid var(--line);padding-top:14px;}
+
+  /* Overview header card */
+  .metacard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px;margin-bottom:14px;display:flex;gap:10px;}
+  .metacard .fld{flex:1;}
+  .metacard label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);margin-bottom:4px;}
+  .metacard input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px 10px;font-size:15px;}
+
+  /* Progress */
+  .progress{margin-bottom:16px;}
+  .progress .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .progress .row b{font-size:15px;}
+  .progress .row span{color:var(--muted);font-size:13px;}
+  .track{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;}
+  .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--good));
+    width:0;transition:width .25s ease;}
+
+  /* Section + items */
+  .section-h{display:flex;justify-content:space-between;align-items:baseline;
+    margin:18px 2px 8px;}
+  .section-h h2{font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent2);margin:0;}
+  .section-h .stsub{font-size:12px;color:var(--muted);}
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 14px;display:flex;align-items:center;gap:12px;}
+  .item:active{background:var(--panel2);}
+  .item .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--bg);}
+  .item.counted .check{background:var(--good);border-color:var(--good);}
+  .item .nm{flex:1;min-width:0;}
+  .item .nm b{font-weight:600;font-size:16px;display:block;}
+  .item .nm small{color:var(--muted);font-size:12px;}
+  .item .tot{text-align:right;flex:none;}
+  .item .tot .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .item .tot .u{font-size:11px;color:var(--muted);display:block;margin-top:-2px;}
+  .item .tot.empty .v{color:var(--muted);font-weight:600;}
+
+  /* Footer action bar */
+  .footer{position:fixed;left:0;right:0;bottom:0;z-index:20;
+    padding:10px 14px calc(10px + var(--safe-b));
+    background:linear-gradient(180deg,transparent,#14110f 22%);
+    max-width:560px;margin:0 auto;}
+  .footer:empty{display:none;}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:15px;border-radius:13px;font-size:16px;font-weight:700;}
+  .btn.primary{background:var(--accent);color:#fff;}
+  .btn.primary:active{background:#c93c14;}
+  .btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:active{background:var(--tap);}
+  .btn.good{background:var(--good);color:#06210f;}
+  .btn-row{display:flex;gap:10px;}
+  .btn-row .btn{flex:1;}
+
+  /* Count screen */
+  .count-head{margin-bottom:6px;}
+  .count-head h2{margin:0;font-size:24px;}
+  .count-head .meth{color:var(--muted);font-size:13px;margin-top:2px;}
+  .consts{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;}
+  .chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+    padding:5px 11px;font-size:12px;color:var(--muted);}
+  .chip b{color:var(--ink);font-weight:600;}
+  .helper{background:#241d10;border:1px solid #4a3a16;color:#e7c98f;border-radius:11px;
+    padding:10px 12px;font-size:12.5px;line-height:1.5;margin:12px 0;}
+  .helper b{color:#f3d9a3;}
+
+  /* Big live total */
+  .bigtot{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;text-align:center;margin:14px 0;}
+  .bigtot .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+  .bigtot .v{font-size:52px;font-weight:800;line-height:1.05;margin-top:4px;font-variant-numeric:tabular-nums;}
+  .bigtot .u{color:var(--muted);font-size:14px;}
+
+  /* Number field (clicker + numpad) */
+  .nf{margin:12px 0;}
+  .nf .nflabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
+  .nf .nflabel b{font-size:15px;font-weight:600;}
+  .nf .nflabel small{color:var(--muted);font-size:12px;}
+  .nfctl{display:flex;align-items:stretch;gap:10px;}
+  .nfbtn{flex:none;width:64px;border-radius:13px;background:var(--panel2);border:1px solid var(--line);
+    font-size:30px;font-weight:600;display:flex;align-items:center;justify-content:center;
+    user-select:none;}
+  .nfbtn:active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .nfval{flex:1;border-radius:13px;background:var(--panel);border:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;min-height:64px;}
+  .nfval .num{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .nfval .tap{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .nfval:active{border-color:var(--accent2);}
+
+  /* Numpad overlay */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);
+    display:flex;align-items:flex-end;justify-content:center;}
+  .pad{width:100%;max-width:560px;background:var(--panel);border-top-left-radius:20px;
+    border-top-right-radius:20px;padding:14px 14px calc(16px + var(--safe-b));
+    box-shadow:0 -8px 40px rgba(0,0,0,.5);animation:slideup .18s ease;}
+  @keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  .pad .padhead{text-align:center;margin-bottom:8px;}
+  .pad .padhead .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px;}
+  .pad .paddisp{font-size:46px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;
+    min-height:58px;line-height:1.1;}
+  .pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:8px;}
+  .key{padding:18px;border-radius:13px;background:var(--panel2);border:1px solid var(--line);
+    font-size:24px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .key:active{background:var(--tap);}
+  .key.wide{font-size:18px;}
+  .key.done{background:var(--good);color:#06210f;}
+  .key.clr{color:var(--accent2);}
+
+  /* Settings */
+  .set-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px;margin-bottom:10px;}
+  .set-item .top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .set-item .top input.nameinp{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px;font-size:15px;font-weight:600;}
+  .set-item .order{display:flex;gap:4px;}
+  .miniicon{width:36px;height:36px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .miniicon:active{background:var(--tap);}
+  .miniicon.del{color:var(--danger);}
+  .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .cgrid .cf label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;}
+  .cgrid .cf input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px;font-size:14px;}
+  .set-sec-h{display:flex;align-items:center;gap:8px;margin:18px 2px 8px;}
+  .set-sec-h h2{font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent2);margin:0;flex:1;}
+  .addbtn{background:var(--panel2);border:1px dashed var(--line);border-radius:12px;padding:12px;
+    width:100%;color:var(--muted);font-weight:600;font-size:14px;}
+  .addbtn:active{background:var(--tap);}
+  select.methsel{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;font-size:14px;}
+
+  /* Global settings rows */
+  .setcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:12px;}
+  .setcard h3{margin:0 0 4px;font-size:15px;}
+  .setcard p{margin:0 0 10px;color:var(--muted);font-size:12.5px;}
+  .setcard input.txt{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:10px;font-size:15px;}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;padding:11px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--muted);font-weight:600;font-size:14px;}
+  .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* Summary */
+  .sumrow{display:flex;justify-content:space-between;padding:11px 4px;border-bottom:1px solid var(--line);}
+  .sumrow .nm{color:var(--ink);}
+  .sumrow .nm small{color:var(--muted);display:block;font-size:11px;}
+  .sumrow .v{font-weight:700;font-variant-numeric:tabular-nums;}
+  .sumrow.sec{border:none;padding:14px 4px 4px;}
+  .sumrow.sec b{color:var(--accent2);text-transform:uppercase;font-size:12px;letter-spacing:.6px;}
+  .toast{position:fixed;left:50%;bottom:calc(96px + var(--safe-b));transform:translateX(-50%);
+    background:var(--good);color:#06210f;padding:10px 18px;border-radius:999px;font-weight:700;
+    font-size:14px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  .danger-zone{margin-top:22px;}
+  textarea.exp{width:100%;min-height:160px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--ink);border-radius:11px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:13px;}
+  .note{color:var(--muted);font-size:12.5px;margin:8px 2px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bar" id="bar"></div>
+  <main id="view"></main>
+  <div class="footer" id="footer"></div>
+</div>
+<div id="overlayRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+"use strict";
+(function(){
+
+/* ====================================================================
+   Howie Helper — app shell + tools
+   Single-file PWA, phone-first, offline, all data on-device.
+   The home screen launches tools from a registry; the Nightly Inventory
+   tool is the ported prototype (logic + cooler presets unchanged).
+   ==================================================================== */
+
+const elView=document.getElementById("view");
+const elBar=document.getElementById("bar");
+const elFooter=document.getElementById("footer");
+const elMain=elView; // alias
+
+/* ---------------- shared helpers ---------------- */
+function uid(){ return "i" + Math.abs(hashStr(Date_now_safe() + ":" + counterTick())).toString(36); }
+let _tick = 0;
+function counterTick(){ return (_tick++); }
+function Date_now_safe(){ return (typeof performance!=="undefined" && performance.now? Math.floor(performance.now()*1000): 0) + (new Date()).getTime(); }
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))|0; } return h; }
+function fmt(n){
+  n=Number(n)||0;
+  if(Math.abs(n-Math.round(n))<1e-9) return String(Math.round(n));
+  return (Math.round(n*100)/100).toString();
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+let toastT=null;
+function toast(msg){
+  const r=document.getElementById("toastRoot");
+  r.innerHTML=`<div class="toast">${esc(msg)}</div>`;
+  clearTimeout(toastT); toastT=setTimeout(()=>{ r.innerHTML=""; },1600);
+}
+
+/* ====================================================================
+   SHELL
+   ==================================================================== */
+const SHELL_STORE = "howiehelper.shell.v1";
+
+// Tool registry — single source of truth for the home screen.
+// To add a tool later: add a row here, set status:"active", give it a render
+// function in TOOL_VIEWS, and build the tool behind it. No home redesign needed.
+const TOOLS = [
+  { id:"nightlyInventory", name:"Nightly Inventory",      icon:"📋", status:"active", descriptor:"Fast nightly count → on-hand totals to key in" },
+  { id:"prepBackup",       name:"Prep / Backup Tracker",  icon:"🧰", status:"soon",   descriptor:"Track prep & backups through the night" },
+  { id:"doughBuild",       name:"Dough Build",            icon:"🍞", status:"soon",   descriptor:"How much dough to build to" },
+  { id:"sheetOut",         name:"Sheet-out Projector",    icon:"📐", status:"soon",   descriptor:"Project skins/dough to sheet out" },
+  { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"soon",   descriptor:"Count the cash drawer" },
+  { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
+  { id:"scheduleGen",      name:"Schedule Generator",     icon:"🗓️", status:"soon",  descriptor:"Build the staff schedule" },
+];
+function toolById(id){ return TOOLS.find(t=>t.id===id) || null; }
+
+let shell = loadShell();
+function loadShell(){
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(SHELL_STORE)||"null"); }catch(e){ s=null; }
+  if(!s) s={};
+  if(typeof s.lastTool==="undefined") s.lastTool=null;
+  if(s.landing!=="home" && s.landing!=="last") s.landing="last";
+  if(typeof s.storeName!=="string") s.storeName="";
+  return s;
+}
+function saveShell(){ try{ localStorage.setItem(SHELL_STORE, JSON.stringify(shell)); }catch(e){} }
+
+// Top-level app view: "home" | "globalSettings" | "tool"
+let appView="home";
+let activeTool=null;
+
+function renderApp(){
+  if(appView==="tool" && activeTool && toolById(activeTool) && toolById(activeTool).status==="active"){
+    TOOL_VIEWS[activeTool]();          // tool draws its own bar/view/footer
+  } else if(appView==="globalSettings"){
+    renderGlobalSettings();
+  } else {
+    appView="home";
+    renderHome();
+  }
+}
+
+function openHome(){ appView="home"; activeTool=null; renderApp(); window.scrollTo(0,0); }
+function openTool(id){
+  const t=toolById(id);
+  if(!t || t.status!=="active"){ toast(t? t.name+" — not ready yet" : "Not ready yet"); return; }
+  activeTool=id; appView="tool";
+  shell.lastTool=id; saveShell();      // persist last-used for jump-to-last-used
+  if(id==="nightlyInventory") Inv.reset();
+  renderApp(); window.scrollTo(0,0);
+}
+
+/* ---------- Home screen (tool launcher) ---------- */
+function renderHome(){
+  elBar.innerHTML = `<h1>Howie Helper</h1>`;
+  let rows="";
+  for(const t of TOOLS){
+    const soon = t.status!=="active";
+    rows += `
+      <div class="toolrow ${soon?'soon':''}" data-id="${esc(t.id)}">
+        <div class="ic">${t.icon}</div>
+        <div class="meta"><b>${esc(t.name)}</b><small>${esc(t.descriptor)}</small></div>
+        <div class="right">${ soon
+            ? `<span class="badge">Coming soon</span>`
+            : `<span class="chev">›</span>` }</div>
+      </div>`;
+  }
+  elView.className="nofooter";
+  elView.innerHTML = `
+    <div class="home-intro">Store tools — pick one to get started.</div>
+    ${rows}
+    <div class="home-settings">
+      <div class="toolrow" data-id="__settings">
+        <div class="ic">⚙︎</div>
+        <div class="meta"><b>Settings</b><small>Store name, default landing, app reset</small></div>
+        <div class="right"><span class="chev">›</span></div>
+      </div>
+    </div>`;
+
+  elView.querySelectorAll(".toolrow").forEach(el=>{
+    const id=el.getAttribute("data-id");
+    if(id==="__settings"){ el.onclick=()=>{ appView="globalSettings"; renderApp(); window.scrollTo(0,0); }; return; }
+    const t=toolById(id);
+    if(!t || t.status!=="active"){ el.onclick=()=>toast(t.name+" — coming soon"); return; }
+    el.onclick=()=>openTool(id);
+  });
+
+  elFooter.innerHTML="";
+}
+
+/* ---------- Global settings ---------- */
+function renderGlobalSettings(){
+  elBar.innerHTML=`
+    <button class="iconbtn" id="ghome" aria-label="Home">🏠</button>
+    <h1>Settings <span class="sub">app-wide</span></h1>`;
+  document.getElementById("ghome").onclick=openHome;
+
+  elView.className="nofooter";
+  elView.innerHTML=`
+    <div class="setcard">
+      <h3>Store name</h3>
+      <p>Shown in the app for branding. Optional.</p>
+      <input class="txt" id="setStore" type="text" placeholder="e.g. Howie's #84" value="${esc(shell.storeName||'')}">
+    </div>
+    <div class="setcard">
+      <h3>On open</h3>
+      <p>Where the app lands when you launch it.</p>
+      <div class="seg" id="setLanding">
+        <button data-v="last" class="${shell.landing==='last'?'on':''}">Last-used tool</button>
+        <button data-v="home" class="${shell.landing==='home'?'on':''}">Home screen</button>
+      </div>
+    </div>
+    <div class="setcard">
+      <h3>Per-tool settings</h3>
+      <p>Each tool has its own settings inside it — e.g. Nightly Inventory's item list, sections and constants live behind the gear in that tool.</p>
+    </div>
+    <div class="danger-zone">
+      <button class="btn ghost" id="resetApp" style="color:var(--danger)">Reset app (erase all data)</button>
+      <div class="note">Clears every tool's saved data on this device, including all inventory counts. Cannot be undone.</div>
+    </div>`;
+
+  document.getElementById("setStore").oninput=e=>{ shell.storeName=e.target.value; saveShell(); };
+  elView.querySelectorAll("#setLanding button").forEach(b=>{
+    b.onclick=()=>{ shell.landing=b.getAttribute("data-v"); saveShell(); renderGlobalSettings(); };
+  });
+  document.getElementById("resetApp").onclick=()=>{
+    if(confirm("Reset the whole app? This erases ALL data on this device for every tool, including inventory counts. This cannot be undone.")){
+      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); }catch(e){}
+      shell=loadShell(); Inv.reload();
+      toast("App reset"); openHome();
+    }
+  };
+
+  elFooter.innerHTML="";
+}
+
+/* ====================================================================
+   TOOL: Nightly Inventory  (ported prototype — logic & presets unchanged)
+   Namespaced as `Inv` so the shell can drive it. Its internal router
+   (overview / count / summary / settings) is preserved; the overview bar
+   gains a Home control back to the launcher, and the gear opens this
+   tool's per-tool settings.
+   ==================================================================== */
+const Inv = (function(){
+  const STORE = "howiehelper.v1";
+  const SECTIONS_DEFAULT = ["Pop","Cheese","Meats","Boxes"];
+
+  const PAN_HELP = "Pan conversions: 5 lb bag = 3 × ⅙ pans · 12.5 lb pepperoni = 3 × ⅓ pans · Ham 18 lb box = 3 × 6 lb bags (1 bag = one ⅓ pan).";
+
+  function defaultCatalog(){
+    return {
+      sections: SECTIONS_DEFAULT.slice(),
+      items: [
+        mk("Mozzarella","Cheese","weight",{boxLb:30,bagLb:5}),
+        mk("Pepperoni","Meats","weight",{boxLb:null,bagLb:12.5}),
+        mk("Sausage","Meats","weight",{boxLb:null,bagLb:5}),
+        mk("Beef","Meats","weight",{boxLb:null,bagLb:5}),
+        mk("Bacon","Meats","weight",{boxLb:null,bagLb:5}),
+        mk("Grilled chicken","Meats","weight",{boxLb:null,bagLb:5}),
+        mk("Ham","Meats","weight",{boxLb:18,bagLb:6}),
+        mk("Pizza boxes (junior)","Boxes","box",{perUnfold:100,perFold:null}),
+        mk("Pizza boxes (small)","Boxes","box",{perUnfold:100,perFold:null}),
+        mk("Pizza boxes (medium)","Boxes","box",{perUnfold:100,perFold:15}),
+        mk("Pizza boxes (large)","Boxes","box",{perUnfold:50,perFold:15}),
+        mk("Pizza boxes (X-large)","Boxes","box",{perUnfold:50,perFold:null}),
+        mk("Bread boxes","Boxes","box",{perUnfold:100,perFold:15}),
+        mk("Deep Dish boxes","Boxes","box",{perUnfold:100,perFold:null}),
+        mk("Water","Pop","pop",{perCrate:24,frontMax:7,frontPerType:7,backMax:7,backPerType:7}),
+        mk("Gatorade","Pop","pop",{perCrate:24,frontMax:14,frontPerType:7,backMax:7,backPerType:7}),
+        mk("2-liter bottles","Pop","pop",{perCrate:8,frontMax:10,frontPerType:5,backMax:5,backPerType:5}),
+        mk("20oz bottles","Pop","pop",{perCrate:24,frontMax:7,frontPerType:7,backMax:7,backPerType:7}),
+      ]
+    };
+    function mk(name,section,method,constants){
+      return { id: uid(), name, section, method, constants };
+    }
+  }
+
+  const METHOD_LABEL = { weight:"Weight (lb)", box:"Box stacks", pop:"Pop crates/rows" };
+  const METHOD_UNIT  = { weight:"lb", box:"boxes", pop:"units" };
+
+  function fieldsFor(item){
+    const c = item.constants||{};
+    if(item.method==="weight"){
+      const f=[];
+      if(c.boxLb!=null) f.push({key:"boxes",label:"Boxes",sub:c.boxLb+" lb ea",step:1,decimal:false});
+      f.push({key:"bags",label:"Bags",sub:(c.bagLb!=null?c.bagLb+" lb ea":""),step:1,decimal:false});
+      f.push({key:"onLineLb",label:"On-line lb",sub:"eye-weighed on make line",step:1,decimal:true});
+      return f;
+    }
+    if(item.method==="box"){
+      const f=[{key:"unfold",label:"Unfold stacks",sub:c.perUnfold+" / stack",step:1,decimal:false}];
+      if(c.perFold!=null) f.push({key:"fold",label:"Fold stacks",sub:c.perFold+" / stack",step:1,decimal:false});
+      f.push({key:"loose",label:"Loose",sub:"individual boxes",step:1,decimal:false});
+      return f;
+    }
+    if(item.method==="pop"){
+      const frontSub = c.frontPerType!=null ? ("up to "+c.frontPerType+" / type")
+                     : (c.frontMax!=null ? "up to "+c.frontMax : "count bottles");
+      const backSub  = c.backPerType!=null ? ("up to "+c.backPerType+" / type")
+                     : "up to "+c.backMax;
+      const f=[
+        {key:"crates",label:"Crates",sub:(c.perCrate!=null? c.perCrate+" / crate":"full crates"),step:1,decimal:false},
+        {key:"looseCrate",label:"Loose",sub:"bottles in opened crate",step:1,decimal:false},
+        {key:"front",label:"Front (bottles)",sub:frontSub,step:1,decimal:false},
+      ];
+      if(c.backMax!=null) f.push({key:"back",label:"Back (bottles)",sub:backSub,step:1,decimal:false});
+      return f;
+    }
+    return [];
+  }
+
+  function totalFor(item, counts){
+    const c=item.constants||{}, q=counts||{};
+    const n=k=>Number(q[k])||0;
+    if(item.method==="weight"){
+      return (c.boxLb!=null? n("boxes")*c.boxLb:0) + n("bags")*(c.bagLb||0) + n("onLineLb");
+    }
+    if(item.method==="box"){
+      return n("unfold")*(c.perUnfold||0) + (c.perFold!=null? n("fold")*c.perFold:0) + n("loose");
+    }
+    if(item.method==="pop"){
+      return n("crates")*(c.perCrate||0) + n("looseCrate") + n("front") + n("back");
+    }
+    return 0;
+  }
+
+  function constChips(item){
+    const c=item.constants||{};
+    if(item.method==="weight"){
+      const a=[]; if(c.boxLb!=null)a.push(["Box",c.boxLb+" lb"]); if(c.bagLb!=null)a.push(["Bag",c.bagLb+" lb"]); return a;
+    }
+    if(item.method==="box"){
+      const a=[["Unfold",c.perUnfold+"/stack"]]; if(c.perFold!=null)a.push(["Fold",c.perFold+"/stack"]); return a;
+    }
+    if(item.method==="pop"){
+      const a=[]; if(c.perCrate!=null)a.push(["Crate",c.perCrate+"/ea"]);
+      if(c.frontMax!=null)a.push(["Front max",String(c.frontMax)]);
+      if(c.backMax!=null)a.push(["Back max",String(c.backMax)]);
+      return a;
+    }
+    return [];
+  }
+
+  /* ---------------- State / persistence ---------------- */
+  let state = load();
+  function todayStr(){
+    const d=new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function load(){
+    let s=null;
+    try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
+    if(!s || !s.catalog){
+      s = { catalog: defaultCatalog(), nights:{}, currentDate: todayStr() };
+    }
+    if(!s.currentDate) s.currentDate = todayStr();
+    if(!s.nights) s.nights={};
+    if(!s.nights[s.currentDate]) s.nights[s.currentDate]={ countedBy:"", counts:{}, counted:{} };
+    migrate(s);
+    return s;
+  }
+  function migrate(s){
+    // Pop cooler layout: per-item front/back max, rows counted as bottles. Idempotent.
+    if(!(s.catalog && Array.isArray(s.catalog.items) && (s.catalog.sections||[]).includes("Pop"))) return;
+    const items = s.catalog.items;
+    const have = name => items.some(i=>i.name===name);
+    if(!have("Gatorade")) items.push({ id:uid(), name:"Gatorade", section:"Pop", method:"pop", constants:{} });
+    if(!have("Water"))    items.push({ id:uid(), name:"Water",    section:"Pop", method:"pop", constants:{} });
+    const COOLER = {
+      "2-liter bottles": {perCrate:8,  frontMax:10, frontPerType:5, backMax:5,    backPerType:5},
+      "20oz bottles":    {perCrate:24, frontMax:7,  frontPerType:7, backMax:7,    backPerType:7},
+      "Gatorade":        {perCrate:24, frontMax:14, frontPerType:7, backMax:7,    backPerType:7},
+      "Water":           {perCrate:24, frontMax:7,  frontPerType:7, backMax:7,    backPerType:7}
+    };
+    const POP_MIG = 5;
+    const force = (s.popMig||0) < POP_MIG;
+    for(const it of items){
+      if(it.method!=="pop") continue;
+      const c = it.constants || (it.constants={});
+      const known = COOLER[it.name];
+      if(known && force){
+        Object.assign(c, known);
+      } else if(c.frontMax===undefined){
+        if(known){ Object.assign(c, known); if(c.perCrate==null) c.perCrate=known.perCrate; }
+        else { c.frontMax = (c.perRow!=null? c.perRow : null); c.backMax = null; }
+      }
+      delete c.perRow;
+    }
+    if(force){
+      const secs = s.catalog.sections, pi = secs.indexOf("Pop");
+      if(pi>0){ secs.splice(pi,1); secs.unshift("Pop"); }
+      const ORDER = ["Water","Gatorade","2-liter bottles","20oz bottles"];
+      const rank = n => { const i=ORDER.indexOf(n); return i<0?99:i; };
+      const pop = items.filter(i=>i.section==="Pop").sort((a,b)=>rank(a.name)-rank(b.name));
+      const rest = items.filter(i=>i.section!=="Pop");
+      s.catalog.items = rest.concat(pop);
+    }
+    s.popMig = POP_MIG;
+  }
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+  function night(){
+    const d=state.currentDate;
+    if(!state.nights[d]) state.nights[d]={ countedBy:"", counts:{}, counted:{} };
+    return state.nights[d];
+  }
+  function countsOf(id){ const n=night(); if(!n.counts[id]) n.counts[id]={}; return n.counts[id]; }
+  function isCounted(id){ return !!night().counted[id]; }
+
+  /* ---------------- Internal router ---------------- */
+  let route = { name:"overview", itemId:null };
+  function go(name, itemId){ route={name, itemId:itemId||null}; render(); window.scrollTo(0,0); }
+  function reset(){ route={name:"overview", itemId:null}; } // called when (re)entering the tool
+  function reload(){ state=load(); route={name:"overview", itemId:null}; }
+
+  function render(){
+    if(route.name==="overview") renderOverview();
+    else if(route.name==="count") renderCount();
+    else if(route.name==="summary") renderSummary();
+    else if(route.name==="settings") renderSettings();
+  }
+
+  /* ---------- Overview ---------- */
+  function orderedItems(){
+    const secOrder = state.catalog.sections;
+    return state.catalog.items.slice().sort((a,b)=>{
+      const sa=secOrder.indexOf(a.section), sb=secOrder.indexOf(b.section);
+      if(sa!==sb) return sa-sb;
+      return 0;
+    });
+  }
+  function bySection(){
+    const map={};
+    for(const s of state.catalog.sections) map[s]=[];
+    for(const it of state.catalog.items){ if(!map[it.section]) map[it.section]=[]; map[it.section].push(it); }
+    return map;
+  }
+
+  function renderOverview(){
+    const n=night();
+    const items=state.catalog.items;
+    const total=items.length;
+    const done=items.filter(it=>isCounted(it.id)).length;
+    const pct = total? Math.round(done/total*100):0;
+
+    const sub = shell.storeName ? esc(shell.storeName) : "Inventory";
+    elBar.innerHTML = `
+      <button class="iconbtn" id="navHome" aria-label="Home">🏠</button>
+      <h1>Nightly Inventory <span class="sub">${sub}</span></h1>
+      <button class="iconbtn" id="navSettings" aria-label="Tool settings">⚙︎</button>`;
+    document.getElementById("navHome").onclick=openHome;
+    document.getElementById("navSettings").onclick=()=>go("settings");
+
+    const map=bySection();
+    let secHtml="";
+    for(const sec of state.catalog.sections){
+      const list=map[sec]||[];
+      if(!list.length) continue;
+      const sdone=list.filter(it=>isCounted(it.id)).length;
+      secHtml += `<div class="section-h"><h2>${esc(sec)}</h2><span class="stsub">${sdone}/${list.length}</span></div><div class="list">`;
+      for(const it of list){
+        const counted=isCounted(it.id);
+        const t = counted? fmt(totalFor(it,countsOf(it.id))) : null;
+        secHtml += `
+          <div class="item ${counted?'counted':''}" data-id="${it.id}">
+            <div class="check">${counted?'✓':''}</div>
+            <div class="nm"><b>${esc(it.name)}</b><small>${esc(METHOD_LABEL[it.method])}</small></div>
+            <div class="tot ${counted?'':'empty'}">
+              <span class="v">${counted? t : '—'}</span>
+              <span class="u">${counted? METHOD_UNIT[it.method] : 'not counted'}</span>
+            </div>
+          </div>`;
+      }
+      secHtml+=`</div>`;
+    }
+
+    elView.className="";
+    elView.innerHTML = `
+      <div class="metacard">
+        <div class="fld"><label>Date</label><input id="mDate" type="date" value="${esc(state.currentDate)}"></div>
+        <div class="fld"><label>Counted by</label><input id="mBy" type="text" placeholder="name" value="${esc(n.countedBy||'')}"></div>
+      </div>
+      <div class="progress">
+        <div class="row"><b>${done} of ${total} items counted</b><span>${pct}%</span></div>
+        <div class="track"><i style="width:${pct}%"></i></div>
+      </div>
+      ${secHtml}`;
+
+    document.getElementById("mDate").onchange=e=>{
+      const v=e.target.value||todayStr();
+      state.currentDate=v;
+      if(!state.nights[v]) state.nights[v]={countedBy:n.countedBy||"",counts:{},counted:{}};
+      save(); renderOverview();
+    };
+    document.getElementById("mBy").oninput=e=>{ night().countedBy=e.target.value; save(); };
+    elView.querySelectorAll(".item").forEach(el=>{
+      el.onclick=()=>go("count", el.getAttribute("data-id"));
+    });
+
+    elFooter.innerHTML = `<button class="btn primary" id="goSum">Summary / Export &nbsp;→</button>`;
+    document.getElementById("goSum").onclick=()=>go("summary");
+  }
+
+  /* ---------- Count screen ---------- */
+  function renderCount(){
+    const item=state.catalog.items.find(i=>i.id===route.itemId);
+    if(!item){ go("overview"); return; }
+    const ordered=orderedItems();
+    const idx=ordered.findIndex(i=>i.id===item.id);
+    const next=ordered[idx+1];
+
+    elBar.innerHTML=`
+      <button class="iconbtn" id="back" aria-label="Back">←</button>
+      <h1>${esc(item.section)}<span class="sub"> ${idx+1}/${ordered.length}</span></h1>`;
+    document.getElementById("back").onclick=()=>{ commitCounted(item.id); go("overview"); };
+
+    const chips=constChips(item).map(([k,v])=>`<span class="chip">${esc(k)} <b>${esc(v)}</b></span>`).join("");
+    const helper = item.method==="weight" ? `<div class="helper">🥩 <b>${esc(item.name)}:</b> ${PAN_HELP}</div>` : "";
+
+    const flds=fieldsFor(item);
+    const fieldsHtml=flds.map(f=>numberFieldHTML(item.id,f)).join("");
+
+    elView.className="";
+    elView.innerHTML=`
+      <div class="count-head">
+        <h2>${esc(item.name)}</h2>
+        <div class="meth">${esc(METHOD_LABEL[item.method])}</div>
+      </div>
+      <div class="consts">${chips}</div>
+      ${helper}
+      <div class="bigtot">
+        <div class="lbl">On Hand</div>
+        <div class="v" id="bigTot">${fmt(totalFor(item,countsOf(item.id)))}</div>
+        <div class="u">${METHOD_UNIT[item.method]}</div>
+      </div>
+      ${fieldsHtml}`;
+
+    flds.forEach(f=>wireNumberField(item,f));
+
+    elFooter.innerHTML=`
+      <div class="btn-row">
+        <button class="btn ghost" id="saveBack">Save &amp; Back</button>
+        <button class="btn primary" id="saveNext">${next? 'Save &amp; Next →':'Save &amp; Finish'}</button>
+      </div>`;
+    document.getElementById("saveBack").onclick=()=>{ commitCounted(item.id); go("overview"); };
+    document.getElementById("saveNext").onclick=()=>{
+      commitCounted(item.id);
+      if(next) go("count", next.id); else go("overview");
+    };
+  }
+  function commitCounted(id){ night().counted[id]=true; save(); }
+
+  function refreshBigTotal(item){
+    const el=document.getElementById("bigTot");
+    if(el) el.textContent=fmt(totalFor(item,countsOf(item.id)));
+  }
+
+  /* ---------- Number field component ---------- */
+  function numberFieldHTML(itemId,f){
+    return `
+    <div class="nf" data-key="${f.key}">
+      <div class="nflabel"><b>${esc(f.label)}</b><small>${esc(f.sub||"")}</small></div>
+      <div class="nfctl">
+        <button class="nfbtn minus" aria-label="minus">−</button>
+        <button class="nfval" aria-label="enter value">
+          <span class="num"></span>
+          <span class="tap">tap to type</span>
+        </button>
+        <button class="nfbtn plus" aria-label="plus">+</button>
+      </div>
+    </div>`;
+  }
+  function wireNumberField(item,f){
+    const root=elView.querySelector(`.nf[data-key="${f.key}"]`);
+    const numEl=root.querySelector(".num");
+    const q=countsOf(item.id);
+    function cur(){ return Number(q[f.key])||0; }
+    function set(v){
+      if(v<0) v=0;
+      if(!f.decimal) v=Math.round(v);
+      else v=Math.round(v*100)/100;
+      q[f.key]=v; save();
+      numEl.textContent=fmt(v);
+      refreshBigTotal(item);
+    }
+    numEl.textContent=fmt(cur());
+    root.querySelector(".minus").onclick=()=>set(cur()-f.step);
+    root.querySelector(".plus").onclick=()=>set(cur()+f.step);
+    attachRepeat(root.querySelector(".minus"),()=>set(cur()-f.step));
+    attachRepeat(root.querySelector(".plus"),()=>set(cur()+f.step));
+    root.querySelector(".nfval").onclick=()=>openNumpad(f.label, cur(), f.decimal, v=>set(v));
+  }
+  function attachRepeat(btn,fn){
+    let t1=null,t2=null;
+    const start=e=>{ t1=setTimeout(()=>{ t2=setInterval(fn,90); },420); };
+    const stop=()=>{ clearTimeout(t1); clearInterval(t2); };
+    btn.addEventListener("touchstart",start,{passive:true});
+    btn.addEventListener("touchend",stop); btn.addEventListener("touchcancel",stop);
+    btn.addEventListener("mousedown",start); btn.addEventListener("mouseup",stop); btn.addEventListener("mouseleave",stop);
+  }
+
+  /* ---------- Numpad overlay ---------- */
+  const overlayRoot=document.getElementById("overlayRoot");
+  function openNumpad(label, startVal, decimal, onDone){
+    let buf = (startVal? String(startVal):"");
+    function disp(){ return buf===""? "0" : buf; }
+    const keys = decimal
+      ? ["1","2","3","4","5","6","7","8","9",".","0","⌫"]
+      : ["1","2","3","4","5","6","7","8","9","C","0","⌫"];
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="ov">
+        <div class="pad" id="pad">
+          <div class="padhead"><div class="l">${esc(label)}</div></div>
+          <div class="paddisp" id="disp">${esc(disp())}</div>
+          <div class="grid">
+            ${keys.map(k=>`<button class="key ${k==='C'||k==='⌫'?'clr':''}" data-k="${k}">${k}</button>`).join("")}
+          </div>
+          <div class="grid" style="grid-template-columns:1fr 2fr;margin-top:9px;">
+            <button class="key clr" data-k="ALLCLR">Clear</button>
+            <button class="key done" data-k="DONE">Done</button>
+          </div>
+        </div>
+      </div>`;
+    const dispEl=document.getElementById("disp");
+    function upd(){ dispEl.textContent=disp(); }
+    function press(k){
+      if(k==="DONE"){ close(Number(buf||"0")); return; }
+      if(k==="ALLCLR"||k==="C"){ buf=""; upd(); return; }
+      if(k==="⌫"){ buf=buf.slice(0,-1); upd(); return; }
+      if(k==="."){ if(buf.includes(".")) return; if(buf==="") buf="0"; buf+="."; upd(); return; }
+      if(buf==="0") buf="";
+      if(buf.replace(".","").length>=7) return;
+      buf+=k; upd();
+    }
+    overlayRoot.querySelectorAll(".key").forEach(b=> b.onclick=()=>press(b.getAttribute("data-k")) );
+    document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") close(Number(buf||"0")); };
+    function close(v){ overlayRoot.innerHTML=""; onDone(isNaN(v)?0:v); }
+  }
+
+  /* ---------- Summary / Export ---------- */
+  function renderSummary(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="back" aria-label="Back">←</button>
+      <h1>Summary <span class="sub">${esc(state.currentDate)}</span></h1>`;
+    document.getElementById("back").onclick=()=>go("overview");
+
+    const map=bySection();
+    let html="", lines=[];
+    for(const sec of state.catalog.sections){
+      const list=map[sec]||[]; if(!list.length) continue;
+      html+=`<div class="sumrow sec"><b>${esc(sec)}</b></div>`;
+      for(const it of list){
+        const counted=isCounted(it.id);
+        const t=totalFor(it,countsOf(it.id));
+        const shown=counted? fmt(t) : "—";
+        html+=`<div class="sumrow"><div class="nm">${esc(it.name)}<small>${esc(METHOD_UNIT[it.method])}${counted?'':' · not counted'}</small></div><div class="v">${shown}</div></div>`;
+        lines.push(`${it.name}: ${counted? fmt(t):'—'}`);
+      }
+    }
+    const exportText = `Howie Helper — Nightly Inventory — ${state.currentDate}`
+      + (night().countedBy? ` (by ${night().countedBy})`:"")
+      + (shell.storeName? `\n${shell.storeName}`:"")
+      + `\n\n` + lines.join("\n");
+
+    elView.className="";
+    elView.innerHTML=`
+      ${html}
+      <div class="note">Listed in entry order. Copy and key into the store computer.</div>
+      <textarea class="exp" id="exp" readonly>${esc(exportText)}</textarea>
+      <div class="danger-zone">
+        <button class="btn ghost" id="resetBtn" style="color:var(--danger)">Reset all counts (tonight)</button>
+      </div>`;
+
+    elFooter.innerHTML=`
+      <div class="btn-row">
+        <button class="btn ghost" id="shareBtn">Share</button>
+        <button class="btn good" id="copyBtn">Copy</button>
+      </div>`;
+
+    document.getElementById("copyBtn").onclick=async()=>{
+      const txt=document.getElementById("exp").value;
+      try{ await navigator.clipboard.writeText(txt); toast("Copied"); }
+      catch(e){ const ta=document.getElementById("exp"); ta.focus(); ta.select(); document.execCommand&&document.execCommand("copy"); toast("Copied"); }
+    };
+    document.getElementById("shareBtn").onclick=async()=>{
+      const txt=document.getElementById("exp").value;
+      if(navigator.share){ try{ await navigator.share({title:"Howie Helper — Nightly Inventory",text:txt}); }catch(e){} }
+      else { try{ await navigator.clipboard.writeText(txt); toast("Copied (share n/a)"); }catch(e){ toast("Share not supported"); } }
+    };
+    document.getElementById("resetBtn").onclick=()=>{
+      if(confirm("Reset all counts for "+state.currentDate+"? This clears tonight's entries.")){
+        state.nights[state.currentDate]={countedBy:night().countedBy||"",counts:{},counted:{}};
+        save(); toast("Counts reset"); go("overview");
+      }
+    };
+  }
+
+  /* ---------- Per-tool settings ---------- */
+  function renderSettings(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="back" aria-label="Back">←</button>
+      <h1>Inventory Settings</h1>`;
+    document.getElementById("back").onclick=()=>go("overview");
+
+    const map=bySection();
+    let html="";
+    state.catalog.sections.forEach((sec,si)=>{
+      html+=`<div class="set-sec-h"><h2>${esc(sec)}</h2>
+        <button class="miniicon secup" data-si="${si}" ${si===0?'disabled style="opacity:.3"':''}>↑</button>
+        <button class="miniicon secdn" data-si="${si}" ${si===state.catalog.sections.length-1?'disabled style="opacity:.3"':''}>↓</button></div>`;
+      const list=map[sec]||[];
+      list.forEach((it)=>{ html+=settingItemHTML(it); });
+      html+=`<button class="addbtn" data-addsec="${esc(sec)}">+ Add item to ${esc(sec)}</button>`;
+    });
+
+    elView.className="";
+    elView.innerHTML = html + `
+      <div class="danger-zone">
+        <button class="btn ghost" id="resetCounts" style="color:var(--danger)">Reset all counts (tonight)</button>
+      </div>
+      <div class="note">Edits to constants apply to future counts. Item list &amp; constants are shared across nights.</div>`;
+
+    elView.querySelectorAll(".set-item").forEach(el=>{
+      const id=el.getAttribute("data-id");
+      const it=state.catalog.items.find(i=>i.id===id);
+      el.querySelector(".nameinp").oninput=e=>{ it.name=e.target.value; save(); };
+      el.querySelectorAll("input.cinp").forEach(inp=>{
+        inp.oninput=e=>{
+          const ck=inp.getAttribute("data-c");
+          const raw=e.target.value.trim();
+          it.constants[ck] = raw===""? null : (isNaN(Number(raw))? null : Number(raw));
+          save();
+        };
+      });
+      el.querySelector(".methsel").onchange=e=>{
+        it.method=e.target.value; it.constants=defaultConstsFor(it.method); save(); renderSettings();
+      };
+      el.querySelector(".del").onclick=()=>{
+        if(confirm("Delete "+it.name+"?")){
+          state.catalog.items=state.catalog.items.filter(x=>x.id!==id);
+          for(const d in state.nights){ delete state.nights[d].counts[id]; delete state.nights[d].counted[id]; }
+          save(); renderSettings();
+        }
+      };
+      el.querySelector(".mvup").onclick=()=>moveItem(id,-1);
+      el.querySelector(".mvdn").onclick=()=>moveItem(id,1);
+    });
+    elView.querySelectorAll("[data-addsec]").forEach(b=>{
+      b.onclick=()=>{
+        const sec=b.getAttribute("data-addsec");
+        const method = sec==="Boxes"?"box": sec==="Pop"?"pop":"weight";
+        const it={id:uid(),name:"New item",section:sec,method,constants:defaultConstsFor(method)};
+        state.catalog.items.push(it); save(); renderSettings();
+      };
+    });
+    elView.querySelectorAll(".secup").forEach(b=> b.onclick=()=>moveSection(+b.getAttribute("data-si"),-1));
+    elView.querySelectorAll(".secdn").forEach(b=> b.onclick=()=>moveSection(+b.getAttribute("data-si"),1));
+    document.getElementById("resetCounts").onclick=()=>{
+      if(confirm("Reset all counts for "+state.currentDate+"?")){
+        state.nights[state.currentDate]={countedBy:night().countedBy||"",counts:{},counted:{}};
+        save(); toast("Counts reset");
+      }
+    };
+    elFooter.innerHTML=`<button class="btn primary" id="done">Done</button>`;
+    document.getElementById("done").onclick=()=>go("overview");
+  }
+  function defaultConstsFor(method){
+    if(method==="weight") return {boxLb:null,bagLb:5};
+    if(method==="box") return {perUnfold:100,perFold:null};
+    if(method==="pop") return {perCrate:8,frontMax:10,frontPerType:5,backMax:null,backPerType:null};
+    return {};
+  }
+  function settingItemHTML(it){
+    const c=it.constants||{};
+    let cfields="";
+    if(it.method==="weight"){
+      cfields = cf("Box lb","boxLb",c.boxLb)+cf("Bag lb","bagLb",c.bagLb);
+    }else if(it.method==="box"){
+      cfields = cf("Per unfold stack","perUnfold",c.perUnfold)+cf("Per fold stack","perFold",c.perFold);
+    }else if(it.method==="pop"){
+      cfields = cf("Units / crate","perCrate",c.perCrate)
+        + cf("Front max","frontMax",c.frontMax) + cf("Front / type","frontPerType",c.frontPerType)
+        + cf("Back max","backMax",c.backMax) + cf("Back / type","backPerType",c.backPerType);
+    }
+    function cf(label,key,val){
+      return `<div class="cf"><label>${esc(label)}</label>
+        <input class="cinp" data-c="${key}" inputmode="decimal" placeholder="na" value="${val==null?'':esc(String(val))}"></div>`;
+    }
+    const methOpts=Object.keys(METHOD_LABEL).map(m=>`<option value="${m}" ${m===it.method?'selected':''}>${esc(METHOD_LABEL[m])}</option>`).join("");
+    return `
+    <div class="set-item" data-id="${it.id}">
+      <div class="top">
+        <input class="nameinp" value="${esc(it.name)}">
+        <div class="order">
+          <button class="miniicon mvup">↑</button>
+          <button class="miniicon mvdn">↓</button>
+          <button class="miniicon del">🗑</button>
+        </div>
+      </div>
+      <div class="top">
+        <select class="methsel">${methOpts}</select>
+      </div>
+      <div class="cgrid">${cfields}</div>
+    </div>`;
+  }
+  function moveItem(id,dir){
+    const items=state.catalog.items;
+    const it=items.find(i=>i.id===id);
+    const sameSec=items.filter(i=>i.section===it.section);
+    const pos=sameSec.indexOf(it);
+    const swapWith=sameSec[pos+dir];
+    if(!swapWith) return;
+    const ai=items.indexOf(it), bi=items.indexOf(swapWith);
+    items[ai]=swapWith; items[bi]=it;
+    save(); renderSettings();
+  }
+  function moveSection(si,dir){
+    const s=state.catalog.sections;
+    const ni=si+dir; if(ni<0||ni>=s.length) return;
+    const tmp=s[si]; s[si]=s[ni]; s[ni]=tmp;
+    save(); renderSettings();
+  }
+
+  return { STORE, render, reset, reload };
+})();
+
+const TOOL_VIEWS = {
+  nightlyInventory: ()=>Inv.render(),
+};
+
+/* ====================================================================
+   PWA install (manifest via blob) + boot
+   ==================================================================== */
+(function injectManifest(){
+  try{
+    const icon="data:image/svg+xml,"+encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'><rect width='512' height='512' rx='96' fill='#e8491d'/><text x='50%' y='58%' font-size='300' text-anchor='middle' fill='#fff' font-family='Arial' font-weight='bold'>H</text></svg>`);
+    const manifest={ name:"Howie Helper", short_name:"Howie Helper", display:"standalone",
+      background_color:"#14110f", theme_color:"#e8491d", start_url:".",
+      icons:[{src:icon,sizes:"512x512",type:"image/svg+xml"}] };
+    const blob=new Blob([JSON.stringify(manifest)],{type:"application/json"});
+    const link=document.createElement("link"); link.rel="manifest"; link.href=URL.createObjectURL(blob);
+    document.head.appendChild(link);
+    const al=document.createElement("link"); al.rel="apple-touch-icon"; al.href=icon; document.head.appendChild(al);
+  }catch(e){}
+})();
+
+document.addEventListener("dblclick",e=>{ e.preventDefault(); },{passive:false});
+
+/* Boot: jump to last-used tool, else home. */
+(function boot(){
+  const last = shell.landing==="last" ? toolById(shell.lastTool) : null;
+  if(last && last.status==="active"){
+    activeTool=last.id; appView="tool";
+    if(last.id==="nightlyInventory") Inv.reset();
+  } else {
+    appView="home";
+  }
+  renderApp();
+})();
+
+})();
+</script>
+</body>
+</html>

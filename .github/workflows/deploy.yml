@@ -1,0 +1,78 @@
+name: Deploy (stable → root, main → /preview)
+
+# Publishes one Pages site with two paths:
+#   /            ← the `stable` branch (LIVE — what people run)
+#   /preview/    ← the `main` branch  (always-on dev preview, isolated data)
+# Both branches are checked out every run, so the live root never changes
+# on a `main` push (its bytes are identical) and a release republishes both.
+
+on:
+  push:
+    branches: [stable, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Queue deploys (don't cancel an in-progress one — a release shouldn't be dropped).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout stable (live)
+        uses: actions/checkout@v4
+        with:
+          ref: stable
+          path: stable
+      - name: Checkout main (dev)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+      - name: Assemble site
+        run: |
+          set -e
+          mkdir -p site
+          # stable at the root
+          rsync -a --exclude='.git' --exclude='.github' stable/ site/
+          # main under /preview
+          mkdir -p site/preview
+          rsync -a --exclude='.git' --exclude='.github' main/ site/preview/
+
+          # Isolate the dev build from the live app: separate localStorage keys
+          # (same origin shares storage, so the keys must differ) + DEV labels.
+          DEV=site/preview/index.html
+          sed -i \
+            -e 's/howiehelper\.shell\.v1/howiehelper.shell.v1.dev/g' \
+            -e 's/"howiehelper\.v1"/"howiehelper.v1.dev"/g' \
+            -e 's/name:"Howie Helper"/name:"Howie Helper DEV"/g' \
+            -e 's#<title>Howie Helper</title>#<title>Howie Helper (DEV)</title>#' \
+            -e 's/content="Howie Helper"/content="Howie Helper DEV"/' \
+            "$DEV"
+
+          # Small non-blocking DEV badge (pointer-events:none = never intercepts taps).
+          BADGE='<div style="position:fixed;top:6px;right:6px;z-index:9999;background:#f3a712;color:#14110f;font-family:-apple-system,sans-serif;font-weight:800;font-size:9px;letter-spacing:.5px;padding:3px 6px;border-radius:6px;pointer-events:none;opacity:.9">DEV</div>'
+          sed -i "s|</body>|${BADGE}</body>|" "$DEV"
+
+          touch site/.nojekyll site/preview/.nojekyll
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

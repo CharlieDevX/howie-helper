@@ -13,7 +13,13 @@ It's a single static file — no build step.
 
 - **Locally:** `python3 -m http.server` in this folder, then open the printed URL
   on your phone (same Wi-Fi) and "Add to Home Screen."
-- **Live:** GitHub Pages serves the `stable` branch.
+- **Live:** GitHub Pages serves the `stable` branch →
+  https://charliedevx.github.io/howie-helper/
+- **Dev preview (always-on):** the `main` branch is auto-published to
+  https://charliedevx.github.io/howie-helper/preview/ by
+  [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It uses separate
+  storage keys and a "DEV" badge, so testing it on your phone never touches the
+  live app's data (both share the `github.io` origin, hence the separate keys).
 
 ## Branches (git workflow)
 

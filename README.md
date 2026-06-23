@@ -3,9 +3,10 @@
 A phone-first PWA suite of tools for running a Hungry Howie's store. Installable,
 runs offline, all data stays on the device (localStorage) — no accounts, no backend.
 
-The home screen is a launcher; **Nightly Inventory** is the first live tool. Other
-tools (Prep / Backup Tracker, Dough Build, Sheet-out Projector, Drawer Cash,
-Sales / Labor Projections, Schedule Generator) are "Coming soon" placeholders.
+The home screen is a launcher. Live tools: **Nightly Inventory** and **Drawer Cash**
+(count safe + drawer → balanced / over / short at open and close). Other tools
+(Prep / Backup Tracker, Dough Build, Sheet-out Projector, Sales / Labor Projections,
+Schedule Generator) are "Coming soon" placeholders.
 
 ## Run it
 

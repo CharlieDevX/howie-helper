@@ -220,6 +220,36 @@
   textarea.exp{width:100%;min-height:160px;background:var(--panel2);border:1px solid var(--line);
     color:var(--ink);border-radius:11px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:13px;}
   .note{color:var(--muted);font-size:12.5px;margin:8px 2px;}
+
+  /* Drawer Cash */
+  .dc-mode{margin-bottom:14px;}
+  .dc-mode .dc-modehint{color:var(--muted);font-size:12.5px;margin:8px 2px 0;}
+  .dc-mode.open .seg button[data-v="open"].on{background:var(--good);border-color:var(--good);color:#06210f;}
+  .dc-mode.close .seg button[data-v="close"].on{background:var(--danger);border-color:var(--danger);color:#fff;}
+  .dc-setup{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:6px 12px 10px;margin-bottom:14px;}
+  .dc-setup .nf{margin:8px 0;}
+  .dc-sec{margin-top:8px;}
+  .dc-sech{font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent2);
+    font-weight:700;margin:20px 2px 6px;}
+  .dc-subtotal{display:flex;justify-content:space-between;align-items:center;
+    color:var(--muted);font-size:13px;padding:10px 4px 2px;border-top:1px solid var(--line);margin-top:6px;}
+  .dc-subtotal b{color:var(--ink);font-size:17px;font-variant-numeric:tabular-nums;}
+  /* Receipt / export card */
+  .dc-receipt{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 16px;margin-bottom:14px;overflow:hidden;position:relative;}
+  .dc-receipt::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--accent);}
+  .dc-rtitle{font-size:22px;font-weight:800;margin-top:4px;}
+  .dc-rsub{color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .dc-rmode{display:inline-block;margin:10px 0 4px;font-size:11px;font-weight:700;letter-spacing:.6px;
+    text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);}
+  .dc-rmode.open{color:var(--good);} .dc-rmode.close{color:var(--accent2);}
+  .dc-rrow{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-top:1px solid var(--line);}
+  .dc-rrow span{color:var(--muted);font-size:14px;}
+  .dc-rrow b{font-size:16px;font-variant-numeric:tabular-nums;}
+  .dc-rrow.total span{color:var(--ink);font-weight:700;} .dc-rrow.total b{font-size:18px;}
+  .dc-rresult{margin-top:14px;text-align:center;font-size:34px;font-weight:800;
+    border:2px solid var(--line);border-radius:13px;padding:16px;background:#1b1613;}
 </style>
 </head>
 <body>
@@ -279,7 +309,7 @@ const TOOLS = [
   { id:"prepBackup",       name:"Prep / Backup Tracker",  icon:"🧰", status:"soon",   descriptor:"Track prep & backups through the night" },
   { id:"doughBuild",       name:"Dough Build",            icon:"🍞", status:"soon",   descriptor:"How much dough to build to" },
   { id:"sheetOut",         name:"Sheet-out Projector",    icon:"📐", status:"soon",   descriptor:"Project skins/dough to sheet out" },
-  { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"soon",   descriptor:"Count the cash drawer" },
+  { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
   { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
   { id:"scheduleGen",      name:"Schedule Generator",     icon:"🗓️", status:"soon",  descriptor:"Build the staff schedule" },
 ];
@@ -319,6 +349,7 @@ function openTool(id){
   activeTool=id; appView="tool";
   shell.lastTool=id; saveShell();      // persist last-used for jump-to-last-used
   if(id==="nightlyInventory") Inv.reset();
+  if(id==="drawerCash") DrawerCash.reset();
   renderApp(); window.scrollTo(0,0);
 }
 
@@ -397,8 +428,8 @@ function renderGlobalSettings(){
   });
   document.getElementById("resetApp").onclick=()=>{
     if(confirm("Reset the whole app? This erases ALL data on this device for every tool, including inventory counts. This cannot be undone.")){
-      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); }catch(e){}
-      shell=loadShell(); Inv.reload();
+      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); }catch(e){}
+      shell=loadShell(); Inv.reload(); DrawerCash.reload();
       toast("App reset"); openHome();
     }
   };
@@ -996,8 +1027,429 @@ const Inv = (function(){
   return { STORE, render, reset, reload };
 })();
 
+/* ====================================================================
+   TOOL: Drawer Cash  — count Safe + Drawer, compare to Revention.
+   Namespaced as `DrawerCash` so the shell can drive it. Open (Start
+   Drawer) verifies the float; Close (Balance) reports over/short vs
+   the POS Revention Number. Self-contained: keeps its own numpad copy
+   so the live Inventory tool is untouched.
+   ==================================================================== */
+const DrawerCash = (function(){
+  const STORE = "howiehelper.drawerCash.v1";
+  const DEFAULT_FLOAT = 300;
+
+  // Denominations — single source of truth; edit here to change rows.
+  const DENOMS = [
+    {key:"b100", label:"$100 bill", value:100},
+    {key:"b50",  label:"$50 bill",  value:50},
+    {key:"b20",  label:"$20 bill",  value:20},
+    {key:"b10",  label:"$10 bill",  value:10},
+    {key:"b5",   label:"$5 bill",   value:5},
+    {key:"b1",   label:"$1 bill",   value:1},
+    {key:"q",    label:"Quarter",   value:0.25},
+    {key:"d",    label:"Dime",      value:0.10},
+    {key:"n",    label:"Nickel",    value:0.05},
+    {key:"p",    label:"Penny",     value:0.01},
+  ];
+  const SECTIONS = [ {key:"safe",label:"Safe"}, {key:"drawer",label:"Drawer"} ];
+
+  /* ---------- State + persistence ---------- */
+  function freshSection(){ const o={misc:0}; DENOMS.forEach(d=>o[d.key]=0); return o; }
+  function blank(){ return { mode:"close", float:DEFAULT_FLOAT, revention:0, revNeg:false,
+                             safe:freshSection(), drawer:freshSection() }; }
+  function load(){
+    let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
+    if(!s||typeof s!=="object") return blank();
+    s.mode = (s.mode==="open")?"open":"close";
+    s.float = Number(s.float); if(!isFinite(s.float)) s.float=DEFAULT_FLOAT;
+    s.revention = Number(s.revention)||0;
+    s.revNeg = (s.revention<0) ? true : !!s.revNeg;
+    SECTIONS.forEach(({key})=>{
+      const src=(s[key]&&typeof s[key]==="object")?s[key]:{};
+      const o={misc:Number(src.misc)||0};
+      DENOMS.forEach(d=>o[d.key]=Number(src[d.key])||0);
+      s[key]=o;
+    });
+    return s;
+  }
+  let state = load();
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+
+  /* ---------- Math ---------- */
+  const r2 = n => Math.round((Number(n)||0)*100)/100;
+  function sectionTotal(secKey){
+    let t = Number(state[secKey].misc)||0;
+    DENOMS.forEach(d=>{ t += (Number(state[secKey][d.key])||0) * d.value; });
+    return r2(t);
+  }
+  function countedTotal(){ return r2(sectionTotal("safe") + sectionTotal("drawer")); }
+  function reventionVal(){ return state.mode==="open" ? 0 : (Number(state.revention)||0); }
+  function overShort(){ return r2(countedTotal() - (Number(state.float)||0) - reventionVal()); }
+  function money(n){ n=Number(n)||0; return (n<0?"-$":"$") + Math.abs(n).toFixed(2); }
+  function resultInfo(){
+    const os=overShort();
+    if(Math.abs(os)<0.005) return {kind:"balanced", label:"BALANCED",            color:"var(--good)", rgb:"#3fb56b"};
+    if(os>0)               return {kind:"over",     label:"OVER "+money(os),     color:"#4a90d9",     rgb:"#4a90d9"};
+    return                        {kind:"short",    label:"SHORT "+money(-os),   color:"var(--danger)", rgb:"#d6493a"};
+  }
+
+  /* ---------- Numpad (own copy — see Inv) ---------- */
+  const overlayRoot=document.getElementById("overlayRoot");
+  function attachRepeat(btn,fn){
+    let t1=null,t2=null;
+    const start=()=>{ t1=setTimeout(()=>{ t2=setInterval(fn,90); },420); };
+    const stop=()=>{ clearTimeout(t1); clearInterval(t2); };
+    btn.addEventListener("touchstart",start,{passive:true});
+    btn.addEventListener("touchend",stop); btn.addEventListener("touchcancel",stop);
+    btn.addEventListener("mousedown",start); btn.addEventListener("mouseup",stop); btn.addEventListener("mouseleave",stop);
+  }
+  function openNumpad(label, startVal, decimal, onDone){
+    let buf = (startVal? String(startVal):"");
+    function disp(){ return buf===""? "0" : buf; }
+    const keys = decimal
+      ? ["1","2","3","4","5","6","7","8","9",".","0","⌫"]
+      : ["1","2","3","4","5","6","7","8","9","C","0","⌫"];
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="dcov">
+        <div class="pad">
+          <div class="padhead"><div class="l">${esc(label)}</div></div>
+          <div class="paddisp" id="dcdisp">${esc(disp())}</div>
+          <div class="grid">
+            ${keys.map(k=>`<button class="key ${k==='C'||k==='⌫'?'clr':''}" data-k="${k}">${k}</button>`).join("")}
+          </div>
+          <div class="grid" style="grid-template-columns:1fr 2fr;margin-top:9px;">
+            <button class="key clr" data-k="ALLCLR">Clear</button>
+            <button class="key done" data-k="DONE">Done</button>
+          </div>
+        </div>
+      </div>`;
+    const dispEl=document.getElementById("dcdisp");
+    function upd(){ dispEl.textContent=disp(); }
+    function press(k){
+      if(k==="DONE"){ close(Number(buf||"0")); return; }
+      if(k==="ALLCLR"||k==="C"){ buf=""; upd(); return; }
+      if(k==="⌫"){ buf=buf.slice(0,-1); upd(); return; }
+      if(k==="."){ if(buf.includes(".")) return; if(buf==="") buf="0"; buf+="."; upd(); return; }
+      if(buf==="0") buf="";
+      if(buf.replace(".","").length>=7) return;
+      buf+=k; upd();
+    }
+    overlayRoot.querySelectorAll(".key").forEach(b=> b.onclick=()=>press(b.getAttribute("data-k")) );
+    document.getElementById("dcov").onclick=e=>{ if(e.target.id==="dcov") close(Number(buf||"0")); };
+    function close(v){ overlayRoot.innerHTML=""; onDone(isNaN(v)?0:v); }
+  }
+
+  /* ---------- Router ---------- */
+  let route={ name:"count" };
+  function go(name){ route={name}; render(); window.scrollTo(0,0); }
+  function reset(){ route={name:"count"}; }
+  function reload(){ state=load(); route={name:"count"}; }
+  function render(){ if(route.name==="result") renderResult(); else renderCount(); }
+
+  /* ---------- Count screen ---------- */
+  function setupCardHTML(){
+    const isOpen = state.mode==="open";
+    const floatRow = `
+      <div class="nf" data-key="__float">
+        <div class="nflabel"><b>Float</b><small>drawer float to leave behind</small></div>
+        <div class="nfctl">
+          <button class="nfval"><span class="num">${money(state.float)}</span><span class="tap">tap to type $</span></button>
+        </div>
+      </div>`;
+    const revRow = isOpen ? "" : `
+      <div class="nf" data-key="__rev">
+        <div class="nflabel"><b>Revention #</b><small>from the POS — can be negative</small></div>
+        <div class="nfctl">
+          <button class="nfbtn" id="dcRevSign" aria-label="toggle sign">${state.revNeg?'−':'+'}</button>
+          <button class="nfval"><span class="num">${money(state.revention)}</span><span class="tap">tap to type</span></button>
+        </div>
+      </div>`;
+    return `<div class="dc-setup">${floatRow}${revRow}</div>`;
+  }
+  function denomRowHTML(secKey,d){
+    const qty=Number(state[secKey][d.key])||0;
+    return `
+    <div class="nf" data-sec="${secKey}" data-key="${d.key}">
+      <div class="nflabel"><b>${esc(d.label)}</b><small>${money(d.value)} ea · ${money(qty*d.value)}</small></div>
+      <div class="nfctl">
+        <button class="nfbtn minus" aria-label="minus">−</button>
+        <button class="nfval"><span class="num">${qty}</span><span class="tap">tap to type</span></button>
+        <button class="nfbtn plus" aria-label="plus">+</button>
+      </div>
+    </div>`;
+  }
+  function miscRowHTML(secKey){
+    const v=Number(state[secKey].misc)||0;
+    return `
+    <div class="nf" data-sec="${secKey}" data-key="misc">
+      <div class="nflabel"><b>Misc</b><small>rolled coin, $2 bills, dollar coins…</small></div>
+      <div class="nfctl">
+        <button class="nfval"><span class="num">${money(v)}</span><span class="tap">tap to type $</span></button>
+      </div>
+    </div>`;
+  }
+  function sectionHTML(s){
+    return `
+    <div class="dc-sec">
+      <div class="dc-sech">${esc(s.label)}</div>
+      ${DENOMS.map(d=>denomRowHTML(s.key,d)).join("")}
+      ${miscRowHTML(s.key)}
+      <div class="dc-subtotal">${esc(s.label)} subtotal <b id="dcSub_${s.key}">${money(sectionTotal(s.key))}</b></div>
+    </div>`;
+  }
+  function refreshTotals(){
+    SECTIONS.forEach(s=>{
+      const el=document.getElementById("dcSub_"+s.key);
+      if(el) el.textContent=money(sectionTotal(s.key));
+    });
+    const r=resultInfo();
+    const card=document.getElementById("dcResult");
+    const v=document.getElementById("dcResultV");
+    const u=document.getElementById("dcResultU");
+    if(card) card.style.borderColor=r.color;
+    if(v){ v.textContent=r.label; v.style.color=r.color; }
+    if(u) u.textContent = `Counted ${money(countedTotal())} · `
+      + (state.mode==="open" ? `goal ${money(state.float)}` : `Revention ${money(reventionVal())}`);
+  }
+  function renderCount(){
+    const isOpen = state.mode==="open";
+    elBar.innerHTML=`
+      <button class="iconbtn" id="dcHome" aria-label="Home">🏠</button>
+      <h1>Drawer Cash <span class="sub">${isOpen?'Start Drawer':'Balance / Close'}</span></h1>`;
+    document.getElementById("dcHome").onclick=openHome;
+
+    const r=resultInfo();
+    elView.className="";
+    elView.innerHTML=`
+      <div class="dc-mode ${isOpen?'open':'close'}">
+        <div class="seg" id="dcMode">
+          <button data-v="open"  class="${isOpen?'on':''}">🟢 Start Drawer</button>
+          <button data-v="close" class="${!isOpen?'on':''}">🔴 Balance / Close</button>
+        </div>
+        <div class="dc-modehint">${isOpen
+          ? 'Open: count Safe + Drawer — they should equal the float.'
+          : 'Close: enter the Revention #, then count all cash on hand.'}</div>
+      </div>
+      ${setupCardHTML()}
+      <div class="bigtot" id="dcResult" style="border-color:${r.color}">
+        <div class="lbl">${isOpen?'Float check':'Over / Short'}</div>
+        <div class="v" id="dcResultV" style="color:${r.color}">${r.label}</div>
+        <div class="u" id="dcResultU">Counted ${money(countedTotal())} · ${isOpen?`goal ${money(state.float)}`:`Revention ${money(reventionVal())}`}</div>
+      </div>
+      ${SECTIONS.map(sectionHTML).join("")}`;
+
+    // Mode toggle
+    elView.querySelectorAll("#dcMode button").forEach(b=>{
+      b.onclick=()=>{ const v=b.getAttribute("data-v"); if(v!==state.mode){ state.mode=v; save(); render(); window.scrollTo(0,0); } };
+    });
+    // Float
+    wireValue('.nf[data-key="__float"] .nfval', "Float", ()=>state.float, true, v=>{ state.float=r2(v); save(); });
+    // Revention (sign + magnitude)
+    if(!isOpen){
+      const signBtn=document.getElementById("dcRevSign");
+      const numEl=elView.querySelector('.nf[data-key="__rev"] .num');
+      function applyRev(mag){ state.revention = r2((state.revNeg?-1:1)*Math.abs(mag)); save(); numEl.textContent=money(state.revention); refreshTotals(); }
+      signBtn.onclick=()=>{ state.revNeg=!state.revNeg; signBtn.textContent=state.revNeg?'−':'+'; applyRev(state.revention); };
+      elView.querySelector('.nf[data-key="__rev"] .nfval').onclick=()=>
+        openNumpad("Revention #", Math.abs(Number(state.revention)||0), true, mag=>applyRev(mag));
+    }
+    // Denomination + misc rows
+    SECTIONS.forEach(s=>{ DENOMS.forEach(d=>wireDenomRow(s.key,d)); wireMiscRow(s.key); });
+
+    elFooter.innerHTML=`
+      <div class="btn-row">
+        <button class="btn ghost" id="dcClear">Clear count</button>
+        <button class="btn primary" id="dcExport">Export →</button>
+      </div>`;
+    document.getElementById("dcExport").onclick=()=>go("result");
+    document.getElementById("dcClear").onclick=()=>{
+      if(confirm("Clear this count? Safe and Drawer quantities reset (float and mode kept).")){
+        state.safe=freshSection(); state.drawer=freshSection();
+        state.revention=0; state.revNeg=false; save(); render(); toast("Cleared");
+      }
+    };
+  }
+  // Tap-to-type a single scalar value (float/misc).
+  function wireValue(sel, label, getter, decimal, setter){
+    const valBtn=elView.querySelector(sel);
+    if(!valBtn) return;
+    const numEl=valBtn.querySelector(".num");
+    valBtn.onclick=()=>openNumpad(label, Number(getter())||0, decimal, v=>{
+      setter(v); numEl.textContent=money(Number(getter())||0); refreshTotals();
+    });
+  }
+  function wireDenomRow(secKey,d){
+    const root=elView.querySelector(`.nf[data-sec="${secKey}"][data-key="${d.key}"]`);
+    const numEl=root.querySelector(".num");
+    const smallEl=root.querySelector(".nflabel small");
+    function cur(){ return Number(state[secKey][d.key])||0; }
+    function set(v){
+      v=Math.round(v); if(v<0) v=0;
+      state[secKey][d.key]=v; save();
+      numEl.textContent=String(v);
+      smallEl.textContent=`${money(d.value)} ea · ${money(v*d.value)}`;
+      refreshTotals();
+    }
+    root.querySelector(".minus").onclick=()=>set(cur()-1);
+    root.querySelector(".plus").onclick=()=>set(cur()+1);
+    attachRepeat(root.querySelector(".minus"),()=>set(cur()-1));
+    attachRepeat(root.querySelector(".plus"),()=>set(cur()+1));
+    root.querySelector(".nfval").onclick=()=>openNumpad(d.label, cur(), false, v=>set(v));
+  }
+  function wireMiscRow(secKey){
+    wireValue(`.nf[data-sec="${secKey}"][data-key="misc"] .nfval`, secKey==="safe"?"Safe Misc $":"Drawer Misc $",
+      ()=>state[secKey].misc, true, v=>{ state[secKey].misc=r2(v); save(); });
+  }
+
+  /* ---------- Result / Export screen ---------- */
+  function summaryRows(){
+    const rows=[ ["Float", money(state.float)],
+                 ["Safe", money(sectionTotal("safe"))],
+                 ["Drawer", money(sectionTotal("drawer"))],
+                 ["Counted total", money(countedTotal())] ];
+    if(state.mode!=="open") rows.push(["Revention #", money(reventionVal())]);
+    return rows;
+  }
+  function exportText(when){
+    const r=resultInfo();
+    const L=[];
+    L.push("Howie Helper — Drawer Cash");
+    if(shell.storeName) L.push(shell.storeName);
+    L.push(when);
+    L.push(state.mode==="open" ? "Start Drawer (Open)" : "Balance / Close");
+    L.push("");
+    summaryRows().forEach(([k,v])=>L.push(k.padEnd(15," ") + v));
+    L.push("");
+    L.push(r.label);
+    return L.join("\n");
+  }
+  function roundRect(x,rx,ry,w,h,rad){
+    x.beginPath();
+    x.moveTo(rx+rad,ry);
+    x.arcTo(rx+w,ry,   rx+w,ry+h, rad);
+    x.arcTo(rx+w,ry+h, rx,  ry+h, rad);
+    x.arcTo(rx,  ry+h, rx,  ry,   rad);
+    x.arcTo(rx,  ry,   rx+w,ry,   rad);
+    x.closePath();
+  }
+  function drawReceipt(when){
+    const W=720, pad=56, rows=summaryRows(), r=resultInfo();
+    const headH=210, rowH=66, resH=150, botPad=44;
+    const H=headH + rows.length*rowH + resH + botPad;
+    const c=document.createElement("canvas"); c.width=W; c.height=H;
+    const x=c.getContext("2d");
+    x.fillStyle="#14110f"; x.fillRect(0,0,W,H);
+    roundRect(x,20,20,W-40,H-40,28); x.fillStyle="#211c19"; x.fill();
+    x.lineWidth=2; x.strokeStyle="#3a322c"; x.stroke();
+    // accent top strip
+    x.save(); roundRect(x,20,20,W-40,H-40,28); x.clip();
+    x.fillStyle="#e8491d"; x.fillRect(20,20,W-40,8); x.restore();
+    // title
+    x.textAlign="left"; x.fillStyle="#f4efe9"; x.font="700 42px -apple-system,Segoe UI,Arial";
+    x.fillText("Drawer Cash", pad, 96);
+    x.fillStyle="#a8998c"; x.font="500 24px -apple-system,Segoe UI,Arial";
+    x.fillText((shell.storeName?shell.storeName+"   ·   ":"")+when, pad, 132);
+    // mode pill
+    const modeTxt=state.mode==="open" ? "START DRAWER" : "BALANCE / CLOSE";
+    x.font="700 22px -apple-system,Segoe UI,Arial";
+    const pw=x.measureText(modeTxt).width+34;
+    roundRect(x,pad,154,pw,38,19); x.fillStyle="#2c2521"; x.fill(); x.strokeStyle="#3a322c"; x.lineWidth=1.5; x.stroke();
+    x.fillStyle=state.mode==="open"?"#3fb56b":"#f3a712"; x.textAlign="left";
+    x.fillText(modeTxt, pad+17, 180);
+    // rows
+    let y=headH+30;
+    rows.forEach(([k,v])=>{
+      const isTotal = k==="Counted total";
+      x.strokeStyle="#322b26"; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y-rowH+18); x.lineTo(W-pad,y-rowH+18); x.stroke();
+      x.textAlign="left"; x.fillStyle=isTotal?"#f4efe9":"#a8998c";
+      x.font=(isTotal?"700 30px":"500 27px")+" -apple-system,Segoe UI,Arial";
+      x.fillText(k, pad, y);
+      x.textAlign="right"; x.fillStyle="#f4efe9"; x.font="700 30px -apple-system,Segoe UI,Arial";
+      x.fillText(v, W-pad, y);
+      y+=rowH;
+    });
+    // result block
+    const by=y-10;
+    roundRect(x,pad,by,W-pad*2,resH-30,20); x.fillStyle="#1b1613"; x.fill();
+    x.strokeStyle=r.rgb; x.lineWidth=3; x.stroke();
+    x.textAlign="center"; x.fillStyle=r.rgb; x.font="800 56px -apple-system,Segoe UI,Arial";
+    x.fillText(r.label, W/2, by+(resH-30)/2+20);
+    return c;
+  }
+  function nowStamp(){
+    const d=new Date();
+    const date=d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+    const time=d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+    return date+" · "+time;
+  }
+  function renderResult(){
+    const when=nowStamp();
+    const r=resultInfo();
+    elBar.innerHTML=`
+      <button class="iconbtn" id="dcBack" aria-label="Back">←</button>
+      <h1>Drawer Cash <span class="sub">summary</span></h1>`;
+    document.getElementById("dcBack").onclick=()=>go("count");
+
+    const rowsHtml=summaryRows().map(([k,v])=>
+      `<div class="dc-rrow ${k==='Counted total'?'total':''}"><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("");
+
+    elView.className="";
+    elView.innerHTML=`
+      <div class="dc-receipt">
+        <div class="dc-rtitle">Drawer Cash</div>
+        <div class="dc-rsub">${shell.storeName?esc(shell.storeName)+" · ":""}${esc(when)}</div>
+        <div class="dc-rmode ${state.mode}">${state.mode==="open"?"START DRAWER":"BALANCE / CLOSE"}</div>
+        ${rowsHtml}
+        <div class="dc-rresult" style="color:${r.color};border-color:${r.color}">${r.label}</div>
+      </div>
+      <textarea class="exp" id="dcExp" readonly>${esc(exportText(when))}</textarea>`;
+
+    elFooter.innerHTML=`
+      <div class="btn-row" style="margin-bottom:10px;">
+        <button class="btn primary" id="dcImg">📷 Save image</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost" id="dcShare">Share</button>
+        <button class="btn good" id="dcCopy">Copy</button>
+      </div>`;
+
+    document.getElementById("dcImg").onclick=()=>saveImage(when);
+    document.getElementById("dcCopy").onclick=async()=>{
+      const txt=document.getElementById("dcExp").value;
+      try{ await navigator.clipboard.writeText(txt); toast("Copied"); }
+      catch(e){ const ta=document.getElementById("dcExp"); ta.focus(); ta.select(); document.execCommand&&document.execCommand("copy"); toast("Copied"); }
+    };
+    document.getElementById("dcShare").onclick=async()=>{
+      const txt=document.getElementById("dcExp").value;
+      if(navigator.share){ try{ await navigator.share({title:"Howie Helper — Drawer Cash",text:txt}); }catch(e){} }
+      else { try{ await navigator.clipboard.writeText(txt); toast("Copied (share n/a)"); }catch(e){ toast("Share not supported"); } }
+    };
+  }
+  function saveImage(when){
+    const c=drawReceipt(when);
+    c.toBlob(async(blob)=>{
+      if(!blob){ toast("Could not create image"); return; }
+      const fname="drawer-cash-"+state.mode+".png";
+      try{
+        const file=new File([blob],fname,{type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:"Drawer Cash"}); return;
+        }
+      }catch(e){ /* fall through to download */ }
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a"); a.href=url; a.download=fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+      toast("Image saved");
+    },"image/png");
+  }
+
+  return { STORE, render, reset, reload };
+})();
+
 const TOOL_VIEWS = {
   nightlyInventory: ()=>Inv.render(),
+  drawerCash: ()=>DrawerCash.render(),
 };
 
 /* ====================================================================

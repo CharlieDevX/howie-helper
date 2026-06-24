@@ -40,8 +40,9 @@
   .bar h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px;flex:1;}
   .bar .sub{font-size:12px;color:var(--muted);font-weight:500;}
   .iconbtn{width:40px;height:40px;border-radius:10px;background:var(--panel2);display:flex;
-    align-items:center;justify-content:center;font-size:19px;flex:none;}
+    align-items:center;justify-content:center;font-size:19px;flex:none;position:relative;overflow:hidden;}
   .iconbtn:active{background:var(--tap);}
+  .iconbtn .ic-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 
   main{flex:1;padding:14px;padding-bottom:calc(96px + var(--safe-b));}
   main.nofooter{padding-bottom:calc(20px + var(--safe-b));}
@@ -130,7 +131,7 @@
   .rail::-webkit-scrollbar{display:none;}
   .railitem{flex:none;width:48px;height:48px;border-radius:12px;overflow:hidden;
     background:var(--panel2);border:1px solid var(--line);padding:0;position:relative;}
-  .railitem img{width:100%;height:100%;object-fit:cover;display:block;}
+  .railitem img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
   .railitem .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-size:18px;font-weight:800;color:var(--muted);text-transform:uppercase;}
   .railitem.cur{box-shadow:0 0 0 2px var(--accent);border-color:var(--accent);}
@@ -307,6 +308,7 @@ function fmt(n){
 }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function slug(name){ return String(name==null?"":name).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+function homeBtnHTML(id){ return `<button class="iconbtn" id="${id}" aria-label="Home"><span class="ic-emoji">🏠</span><img class="ic-img" src="img/home.png" alt="" onerror="this.remove()"></button>`; }
 let toastT=null;
 function toast(msg){
   const r=document.getElementById("toastRoot");
@@ -413,7 +415,7 @@ function renderHome(){
 /* ---------- Global settings ---------- */
 function renderGlobalSettings(){
   elBar.innerHTML=`
-    <button class="iconbtn" id="ghome" aria-label="Home">🏠</button>
+    ${homeBtnHTML("ghome")}
     <h1>Settings <span class="sub">app-wide</span></h1>`;
   document.getElementById("ghome").onclick=openHome;
 
@@ -668,7 +670,7 @@ const Inv = (function(){
 
     const sub = shell.storeName ? esc(shell.storeName) : "Inventory";
     elBar.innerHTML = `
-      <button class="iconbtn" id="navHome" aria-label="Home">🏠</button>
+      ${homeBtnHTML("navHome")}
       <h1>Nightly Inventory <span class="sub">${sub}</span></h1>
       <button class="iconbtn" id="navSettings" aria-label="Tool settings">⚙︎</button>`;
     document.getElementById("navHome").onclick=openHome;
@@ -1270,7 +1272,7 @@ const DrawerCash = (function(){
   function renderCount(){
     const isOpen = state.mode==="open";
     elBar.innerHTML=`
-      <button class="iconbtn" id="dcHome" aria-label="Home">🏠</button>
+      ${homeBtnHTML("dcHome")}
       <h1>Drawer Cash <span class="sub">${isOpen?'Start Drawer':'Balance / Close'}</span></h1>`;
     document.getElementById("dcHome").onclick=openHome;
 

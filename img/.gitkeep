@@ -1,0 +1,5 @@
+# Item thumbnails for the Nightly Inventory photo rail.
+# Filenames follow the slug rule: name -> lowercase, runs of non-alphanumerics -> "-",
+# trim leading/trailing "-".  e.g. "Pizza boxes (X-large)" -> pizza-boxes-x-large.png
+# Square PNGs (~512x512). Missing images fall back to the item's first letter,
+# so the app works fully with none present.

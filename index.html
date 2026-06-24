@@ -117,6 +117,22 @@
   .btn.good{background:var(--good);color:#06210f;}
   .btn-row{display:flex;gap:10px;}
   .btn-row .btn{flex:1;}
+  .btn:disabled{opacity:.35;pointer-events:none;}
+
+  /* Header rail toggle (count screen) */
+  .iconbtn.on{background:var(--accent);color:#fff;}
+  .iconbtn.off{color:var(--muted);}
+
+  /* Item-jump photo rail */
+  .rail{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;margin:0 -2px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .rail::-webkit-scrollbar{display:none;}
+  .railitem{flex:none;width:48px;height:48px;border-radius:12px;overflow:hidden;
+    background:var(--panel2);border:1px solid var(--line);padding:0;position:relative;}
+  .railitem img{width:100%;height:100%;object-fit:cover;display:block;}
+  .railitem .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:18px;font-weight:800;color:var(--muted);text-transform:uppercase;}
+  .railitem.cur{box-shadow:0 0 0 2px var(--accent);border-color:var(--accent);}
 
   /* Count screen */
   .count-head{margin-bottom:6px;}
@@ -289,6 +305,7 @@ function fmt(n){
   return (Math.round(n*100)/100).toString();
 }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function slug(name){ return String(name==null?"":name).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
 let toastT=null;
 function toast(msg){
   const r=document.getElementById("toastRoot");
@@ -560,6 +577,7 @@ const Inv = (function(){
     if(!s.currentDate) s.currentDate = todayStr();
     if(!s.nights) s.nights={};
     if(!s.nights[s.currentDate]) s.nights[s.currentDate]={ countedBy:"", counts:{}, counted:{} };
+    if(typeof s.railShown === "undefined") s.railShown = true;
     migrate(s);
     return s;
   }
@@ -710,12 +728,15 @@ const Inv = (function(){
     if(!item){ go("overview"); return; }
     const ordered=orderedItems();
     const idx=ordered.findIndex(i=>i.id===item.id);
+    const prev=ordered[idx-1];
     const next=ordered[idx+1];
 
     elBar.innerHTML=`
       <button class="iconbtn" id="back" aria-label="Back">←</button>
-      <h1>${esc(item.section)}<span class="sub"> ${idx+1}/${ordered.length}</span></h1>`;
+      <h1>${esc(item.section)}<span class="sub"> ${idx+1}/${ordered.length}</span></h1>
+      <button class="iconbtn ${state.railShown?'on':'off'}" id="railToggle" aria-label="Show/hide photo rail" aria-pressed="${state.railShown}">🖼</button>`;
     document.getElementById("back").onclick=()=>{ commitCounted(item.id); go("overview"); };
+    document.getElementById("railToggle").onclick=()=>{ state.railShown=!state.railShown; save(); renderCount(); };
 
     const chips=constChips(item).map(([k,v])=>`<span class="chip">${esc(k)} <b>${esc(v)}</b></span>`).join("");
     const helper = item.method==="weight" ? `<div class="helper">🥩 <b>${esc(item.name)}:</b> ${PAN_HELP}</div>` : "";
@@ -723,8 +744,11 @@ const Inv = (function(){
     const flds=fieldsFor(item);
     const fieldsHtml=flds.map(f=>numberFieldHTML(item.id,f)).join("");
 
+    const railHtml = state.railShown ? railHTML(ordered, item.id) : "";
+
     elView.className="";
     elView.innerHTML=`
+      ${railHtml}
       <div class="count-head">
         <h2>${esc(item.name)}</h2>
         <div class="meth">${esc(METHOD_LABEL[item.method])}</div>
@@ -739,17 +763,47 @@ const Inv = (function(){
       ${fieldsHtml}`;
 
     flds.forEach(f=>wireNumberField(item,f));
+    if(state.railShown) wireRail();
 
     elFooter.innerHTML=`
       <div class="btn-row">
-        <button class="btn ghost" id="saveBack">Save &amp; Back</button>
-        <button class="btn primary" id="saveNext">${next? 'Save &amp; Next →':'Save &amp; Finish'}</button>
+        <button class="btn ghost" id="prevBtn" ${prev?'':'disabled'}>← Previous</button>
+        <button class="btn primary" id="nextBtn">${next? 'Next →':'Finish'}</button>
       </div>`;
-    document.getElementById("saveBack").onclick=()=>{ commitCounted(item.id); go("overview"); };
-    document.getElementById("saveNext").onclick=()=>{
+    document.getElementById("prevBtn").onclick=()=>{
+      if(!prev) return;
+      commitCounted(item.id); go("count", prev.id);
+    };
+    document.getElementById("nextBtn").onclick=()=>{
       commitCounted(item.id);
       if(next) go("count", next.id); else go("overview");
     };
+  }
+  // Photo item-jump rail: thumbnails from img/<slug>.png, initial-letter fallback.
+  function railHTML(ordered, curId){
+    const cells=ordered.map(it=>{
+      const cur=it.id===curId?" cur":"";
+      const ini=esc((it.name||"?").trim().charAt(0)||"?");
+      return `<button class="railitem${cur}" data-id="${esc(it.id)}" aria-label="${esc(it.name)}">`
+        + `<span class="ini">${ini}</span>`
+        + `<img src="img/${esc(slug(it.name))}.png" alt="" loading="lazy" onerror="this.remove()">`
+        + `</button>`;
+    }).join("");
+    return `<div class="rail" id="itemRail">${cells}</div>`;
+  }
+  function wireRail(){
+    const rail=document.getElementById("itemRail");
+    if(!rail) return;
+    rail.querySelectorAll(".railitem").forEach(b=>{
+      b.onclick=()=>{
+        const id=b.getAttribute("data-id");
+        const cur=state.catalog.items.find(i=>i.id===route.itemId);
+        if(cur) commitCounted(cur.id);
+        go("count", id);
+      };
+    });
+    const active=rail.querySelector(".railitem.cur");
+    if(active) active.scrollIntoView({inline:"center",block:"nearest"});
   }
   function commitCounted(id){ night().counted[id]=true; save(); }
 

@@ -597,6 +597,7 @@ const Inv = (function(){
     if(!s.nights) s.nights={};
     if(!s.nights[s.currentDate]) s.nights[s.currentDate]={ countedBy:"", counts:{}, counted:{} };
     if(typeof s.railShown === "undefined") s.railShown = true;
+    if(typeof s.bigStep === "undefined") s.bigStep = false;
     migrate(s);
     return s;
   }
@@ -757,8 +758,10 @@ const Inv = (function(){
     elBar.innerHTML=`
       <button class="iconbtn" id="back" aria-label="Back">←</button>
       <h1>${esc(item.section)}<span class="sub"> ${idx+1}/${ordered.length}</span></h1>
+      <button class="iconbtn ${state.bigStep?'on':'off'}" id="stepToggle" aria-label="Step size" aria-pressed="${state.bigStep}">${state.bigStep?'4×':'1×'}</button>
       <button class="iconbtn ${state.railShown?'on':'off'}" id="railToggle" aria-label="Show/hide photo rail" aria-pressed="${state.railShown}">🖼</button>`;
     document.getElementById("back").onclick=()=>{ commitCounted(item.id); go("overview"); };
+    document.getElementById("stepToggle").onclick=()=>{ state.bigStep=!state.bigStep; save(); renderCount(); };
     document.getElementById("railToggle").onclick=()=>{ state.railShown=!state.railShown; save(); renderCount(); };
 
     const chips=constChips(item).map(([k,v])=>`<span class="chip">${esc(k)} <b>${esc(v)}</b></span>`).join("");
@@ -864,10 +867,11 @@ const Inv = (function(){
       refreshBigTotal(item);
     }
     numEl.textContent=fmt(cur());
-    root.querySelector(".minus").onclick=()=>set(cur()-f.step);
-    root.querySelector(".plus").onclick=()=>set(cur()+f.step);
-    attachRepeat(root.querySelector(".minus"),()=>set(cur()-f.step));
-    attachRepeat(root.querySelector(".plus"),()=>set(cur()+f.step));
+    const step = state.bigStep ? (f.decimal ? 0.5 : 4) : f.step;
+    root.querySelector(".minus").onclick=()=>set(cur()-step);
+    root.querySelector(".plus").onclick=()=>set(cur()+step);
+    attachRepeat(root.querySelector(".minus"),()=>set(cur()-step));
+    attachRepeat(root.querySelector(".plus"),()=>set(cur()+step));
     root.querySelector(".nfval").onclick=()=>openNumpad(f.label, cur(), f.decimal, v=>set(v));
   }
   function attachRepeat(btn,fn){

@@ -200,6 +200,9 @@
   .key.clr{color:var(--accent2);}
   .key.op{color:var(--accent2);font-size:26px;}
   .key.qk{color:var(--accent2);font-size:19px;font-weight:700;}
+  .key.qk.sub{color:var(--danger);}
+  .key.qsign{font-size:22px;font-weight:700;}
+  .key.qsign.on{background:var(--accent);border-color:var(--accent);color:#fff;}
   .key.ghost{background:none;border:none;pointer-events:none;}
 
   /* Settings */
@@ -896,7 +899,8 @@ const Inv = (function(){
     function clsOf(k){ return k==="C"||k==="BSP"?"clr" : (k==="+"||k==="−")?"op" : k==="DONE"?"done":""; }
     function keyHTML(k){ return k==="GHOST" ? `<span class="key ghost"></span>`
       : `<button class="key ${clsOf(k)}" data-k="${k}">${labelOf[k]||k}</button>`; }
-    const quick=["+1","+4","+6"];
+    const quickVals = decimal ? [1,0.5] : [1,4];
+    let qadd = true; // quick chips add (true) or subtract (false)
     overlayRoot.innerHTML=`
       <div class="overlay" id="ov">
         <div class="pad" id="pad">
@@ -904,10 +908,23 @@ const Inv = (function(){
           <div class="padexpr" id="expr"></div>
           <div class="paddisp" id="disp">0</div>
           <div class="grid calc">${cells.map(keyHTML).join("")}</div>
-          <div class="grid quick">${quick.map(q=>`<button class="key qk" data-k="${q}">${q}</button>`).join("")}</div>
+          <div class="grid quick">
+            <button class="key qk" data-k="QADD:${quickVals[0]}"></button>
+            <button class="key qk" data-k="QADD:${quickVals[1]}"></button>
+            <button class="key qsign" data-k="QSIGN">±</button>
+          </div>
         </div>
       </div>`;
     const dispEl=document.getElementById("disp"), exprEl=document.getElementById("expr");
+    function renderQuick(){
+      overlayRoot.querySelectorAll(".qk").forEach(b=>{
+        const v=b.getAttribute("data-k").slice(5);
+        b.textContent=(qadd?"+":"−")+v;
+        b.classList.toggle("sub",!qadd);
+      });
+      const tog=overlayRoot.querySelector(".qsign");
+      if(tog) tog.classList.toggle("on",!qadd);
+    }
     const lastIsOp=()=>/[+−]$/.test(expr);
     function upd(){
       exprEl.textContent = expr.replace(/([+−])/g," $1 ").trim();
@@ -918,15 +935,16 @@ const Inv = (function(){
       if(k==="DONE"){ close(evalExpr(expr)); return; }
       if(k==="C"){ expr=""; upd(); return; }
       if(k==="BSP"){ expr=expr.slice(0,-1); upd(); return; }
+      if(k==="QSIGN"){ qadd=!qadd; renderQuick(); return; }
+      if(k.slice(0,5)==="QADD:"){ addOp(qadd?"+":"−"); expr+=k.slice(5); upd(); return; } // quick chip ±N
       if(k==="+"||k==="−"){ addOp(k); return; }
-      if(k.charAt(0)==="+"){ addOp("+"); expr+=k.slice(1); upd(); return; } // quick chip +N
       if(k==="."){ const tail=expr.split(/[+−]/).pop(); if(tail.includes(".")) return; if(tail==="") expr+="0"; expr+="."; upd(); return; }
       expr+=k; upd(); // digit
     }
     overlayRoot.querySelectorAll(".key").forEach(b=>{ const k=b.getAttribute("data-k"); if(k) b.onclick=()=>press(k); });
     document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") close(evalExpr(expr)); };
     function close(v){ overlayRoot.innerHTML=""; onDone(isNaN(v)?0:v); }
-    upd();
+    renderQuick(); upd();
   }
 
   /* ---------- Summary / Export ---------- */

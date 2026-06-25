@@ -93,9 +93,14 @@
   .item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
     padding:13px 14px;display:flex;align-items:center;gap:12px;}
   .item:active{background:var(--panel2);}
-  .item .check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;
-    display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--bg);}
-  .item.counted .check{background:var(--good);border-color:var(--good);}
+  .item .thumb{width:44px;height:44px;border-radius:10px;overflow:hidden;position:relative;
+    background:var(--panel2);border:1px solid var(--line);flex:none;}
+  .item .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .item .thumb .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-weight:800;font-size:18px;text-transform:uppercase;}
+  .item .thumb .badge-check{position:absolute;right:-3px;bottom:-3px;width:18px;height:18px;
+    border-radius:50%;background:var(--good);color:var(--bg);display:flex;align-items:center;
+    justify-content:center;font-size:11px;font-weight:800;border:2px solid var(--panel);}
   .item .nm{flex:1;min-width:0;}
   .item .nm b{font-weight:600;font-size:16px;display:block;}
   .item .nm small{color:var(--muted);font-size:12px;}
@@ -180,15 +185,22 @@
   @keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
   .pad .padhead{text-align:center;margin-bottom:8px;}
   .pad .padhead .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px;}
+  .pad .padexpr{text-align:center;color:var(--muted);font-size:15px;min-height:20px;
+    font-variant-numeric:tabular-nums;}
   .pad .paddisp{font-size:46px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;
-    min-height:58px;line-height:1.1;}
+    min-height:54px;line-height:1.1;}
   .pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:8px;}
+  .pad .grid.calc{grid-template-columns:repeat(4,1fr);}
+  .pad .grid.quick{grid-template-columns:repeat(3,1fr);margin-top:9px;}
   .key{padding:18px;border-radius:13px;background:var(--panel2);border:1px solid var(--line);
     font-size:24px;font-weight:600;display:flex;align-items:center;justify-content:center;}
   .key:active{background:var(--tap);}
   .key.wide{font-size:18px;}
   .key.done{background:var(--good);color:#06210f;}
   .key.clr{color:var(--accent2);}
+  .key.op{color:var(--accent2);font-size:26px;}
+  .key.qk{color:var(--accent2);font-size:19px;font-weight:700;}
+  .key.ghost{background:none;border:none;pointer-events:none;}
 
   /* Settings */
   .set-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
@@ -688,7 +700,11 @@ const Inv = (function(){
         const t = counted? fmt(totalFor(it,countsOf(it.id))) : null;
         secHtml += `
           <div class="item ${counted?'counted':''}" data-id="${it.id}">
-            <div class="check">${counted?'✓':''}</div>
+            <div class="thumb">
+              <span class="ini">${esc((it.name||'?').trim().charAt(0)||'?')}</span>
+              <img src="img/${esc(slug(it.name))}.png" alt="" loading="lazy" onerror="this.remove()">
+              ${counted? `<span class="badge-check">✓</span>` : ``}
+            </div>
             <div class="nm"><b>${esc(it.name)}</b><small>${esc(METHOD_LABEL[it.method])}</small></div>
             <div class="tot ${counted?'':'empty'}">
               <span class="v">${counted? t : '—'}</span>
@@ -862,40 +878,55 @@ const Inv = (function(){
 
   /* ---------- Numpad overlay ---------- */
   const overlayRoot=document.getElementById("overlayRoot");
+  // Calculator-style numpad: additive +/- entry with a live result and quick-add chips.
+  function evalExpr(s){
+    const toks = s.replace(/−/g,"-").match(/[+\-]|\d*\.?\d+/g) || [];
+    let total=0, op="+";
+    for(const t of toks){
+      if(t==="+"||t==="-") op=t;
+      else total = op==="+" ? total+parseFloat(t) : total-parseFloat(t);
+    }
+    return total;
+  }
   function openNumpad(label, startVal, decimal, onDone){
-    let buf = (startVal? String(startVal):"");
-    function disp(){ return buf===""? "0" : buf; }
-    const keys = decimal
-      ? ["1","2","3","4","5","6","7","8","9",".","0","⌫"]
-      : ["1","2","3","4","5","6","7","8","9","C","0","⌫"];
+    // Seed with the current value so the common case is "add to what's there".
+    let expr = (startVal!=null && Number(startVal)!==0) ? String(startVal) : "";
+    const cells = ["7","8","9","BSP","4","5","6","+","1","2","3","−","C","0",(decimal?".":"GHOST"),"DONE"];
+    const labelOf={BSP:"⌫",DONE:"Done"};
+    function clsOf(k){ return k==="C"||k==="BSP"?"clr" : (k==="+"||k==="−")?"op" : k==="DONE"?"done":""; }
+    function keyHTML(k){ return k==="GHOST" ? `<span class="key ghost"></span>`
+      : `<button class="key ${clsOf(k)}" data-k="${k}">${labelOf[k]||k}</button>`; }
+    const quick=["+1","+4","+6"];
     overlayRoot.innerHTML=`
       <div class="overlay" id="ov">
         <div class="pad" id="pad">
           <div class="padhead"><div class="l">${esc(label)}</div></div>
-          <div class="paddisp" id="disp">${esc(disp())}</div>
-          <div class="grid">
-            ${keys.map(k=>`<button class="key ${k==='C'||k==='⌫'?'clr':''}" data-k="${k}">${k}</button>`).join("")}
-          </div>
-          <div class="grid" style="grid-template-columns:1fr 2fr;margin-top:9px;">
-            <button class="key clr" data-k="ALLCLR">Clear</button>
-            <button class="key done" data-k="DONE">Done</button>
-          </div>
+          <div class="padexpr" id="expr"></div>
+          <div class="paddisp" id="disp">0</div>
+          <div class="grid calc">${cells.map(keyHTML).join("")}</div>
+          <div class="grid quick">${quick.map(q=>`<button class="key qk" data-k="${q}">${q}</button>`).join("")}</div>
         </div>
       </div>`;
-    const dispEl=document.getElementById("disp");
-    function upd(){ dispEl.textContent=disp(); }
-    function press(k){
-      if(k==="DONE"){ close(Number(buf||"0")); return; }
-      if(k==="ALLCLR"||k==="C"){ buf=""; upd(); return; }
-      if(k==="⌫"){ buf=buf.slice(0,-1); upd(); return; }
-      if(k==="."){ if(buf.includes(".")) return; if(buf==="") buf="0"; buf+="."; upd(); return; }
-      if(buf==="0") buf="";
-      if(buf.replace(".","").length>=7) return;
-      buf+=k; upd();
+    const dispEl=document.getElementById("disp"), exprEl=document.getElementById("expr");
+    const lastIsOp=()=>/[+−]$/.test(expr);
+    function upd(){
+      exprEl.textContent = expr.replace(/([+−])/g," $1 ").trim();
+      dispEl.textContent = fmt(evalExpr(expr));
     }
-    overlayRoot.querySelectorAll(".key").forEach(b=> b.onclick=()=>press(b.getAttribute("data-k")) );
-    document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") close(Number(buf||"0")); };
+    function addOp(k){ if(expr==="") expr="0"; if(lastIsOp()) expr=expr.slice(0,-1); expr+=k; upd(); }
+    function press(k){
+      if(k==="DONE"){ close(evalExpr(expr)); return; }
+      if(k==="C"){ expr=""; upd(); return; }
+      if(k==="BSP"){ expr=expr.slice(0,-1); upd(); return; }
+      if(k==="+"||k==="−"){ addOp(k); return; }
+      if(k.charAt(0)==="+"){ addOp("+"); expr+=k.slice(1); upd(); return; } // quick chip +N
+      if(k==="."){ const tail=expr.split(/[+−]/).pop(); if(tail.includes(".")) return; if(tail==="") expr+="0"; expr+="."; upd(); return; }
+      expr+=k; upd(); // digit
+    }
+    overlayRoot.querySelectorAll(".key").forEach(b=>{ const k=b.getAttribute("data-k"); if(k) b.onclick=()=>press(k); });
+    document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") close(evalExpr(expr)); };
     function close(v){ overlayRoot.innerHTML=""; onDone(isNaN(v)?0:v); }
+    upd();
   }
 
   /* ---------- Summary / Export ---------- */

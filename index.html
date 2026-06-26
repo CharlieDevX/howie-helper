@@ -43,6 +43,12 @@
     align-items:center;justify-content:center;font-size:19px;flex:none;position:relative;overflow:hidden;}
   .iconbtn:active{background:var(--tap);}
   .iconbtn .ic-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  /* Hold-to-reset: --danger fill charges up over 900ms while armed, snaps back on cancel */
+  .reset-hold{touch-action:none;}
+  .reset-hold .reset-g{position:relative;z-index:1;}
+  .reset-hold .reset-fill{position:absolute;inset:0;background:var(--danger);
+    transform:scaleY(0);transform-origin:bottom;opacity:.9;transition:transform 0s;}
+  .reset-hold.arming .reset-fill{transform:scaleY(1);transition:transform 900ms linear;}
 
   main{flex:1;padding:14px;padding-bottom:calc(96px + var(--safe-b));}
   main.nofooter{padding-bottom:calc(20px + var(--safe-b));}
@@ -688,9 +694,32 @@ const Inv = (function(){
     elBar.innerHTML = `
       ${homeBtnHTML("navHome")}
       <h1>Nightly Inventory <span class="sub">${sub}</span></h1>
+      <button class="iconbtn reset-hold" id="navReset" aria-label="Hold to reset counts"><span class="reset-fill"></span><span class="reset-g">↺</span></button>
       <button class="iconbtn" id="navSettings" aria-label="Tool settings">⚙︎</button>`;
     document.getElementById("navHome").onclick=openHome;
     document.getElementById("navSettings").onclick=()=>go("settings");
+
+    // Reset icon — press-and-hold (~900ms) + confirm. A plain tap only hints.
+    const rBtn=document.getElementById("navReset");
+    const HOLD=900; let holdT=null, armed=false;
+    const clearHold=()=>{ clearTimeout(holdT); holdT=null; rBtn.classList.remove("arming"); };
+    rBtn.addEventListener("pointerdown",(e)=>{
+      e.preventDefault(); armed=false; rBtn.classList.add("arming");
+      holdT=setTimeout(()=>{
+        armed=true; clearHold();
+        if(confirm("Reset all counts for "+state.currentDate+"? This clears tonight's entries.")){
+          state.nights[state.currentDate]={countedBy:night().countedBy||"",counts:{},counted:{}};
+          save(); toast("Counts reset"); renderOverview();
+        }
+      },HOLD);
+    });
+    rBtn.addEventListener("pointerup",()=>{ if(!armed && holdT){ clearHold(); toast("Hold to reset counts"); } });
+    rBtn.addEventListener("pointercancel",clearHold);
+    rBtn.addEventListener("pointerleave",clearHold);          // mouse off-button
+    rBtn.addEventListener("pointermove",(e)=>{                // touch drag-off (touch auto-captures the pointer)
+      if(!holdT) return; const r=rBtn.getBoundingClientRect();
+      if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) clearHold();
+    });
 
     const map=bySection();
     let secHtml="";

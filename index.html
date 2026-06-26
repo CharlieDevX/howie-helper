@@ -292,6 +292,88 @@
   .dc-rrow.total span{color:var(--ink);font-weight:700;} .dc-rrow.total b{font-size:18px;}
   .dc-rresult{margin-top:14px;text-align:center;font-size:34px;font-weight:800;
     border:2px solid var(--line);border-radius:13px;padding:16px;background:#1b1613;}
+
+  /* ===== Nightly Inventory export sheets (ported from locked mockups, scoped) ===== */
+  /* Share-image preview overlay */
+  .hhx-preview{max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff;}
+  .hhx-preview img{width:100%;display:block;}
+
+  /* Detailed / shareable sheet — branded red/gold (scoped under .hhx) */
+  .hhx{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .hhx .page{width:8.5in;min-height:11in;margin:0;background:#fff;color:#1f1c1a;
+    display:flex;flex-direction:column;overflow:hidden;}
+  .hhx .head{background:#C8102E;padding:22px 30px;display:flex;align-items:center;justify-content:space-between;}
+  .hhx .brand{display:flex;align-items:center;gap:14px;}
+  .hhx .logo{width:46px;height:46px;border-radius:50%;background:#FFC72C;display:flex;
+    align-items:center;justify-content:center;font-size:26px;}
+  .hhx .brand .name{color:#fff;font-size:23px;font-weight:800;line-height:1.05;letter-spacing:.2px;}
+  .hhx .brand .sub{color:#FFC72C;font-size:14px;font-weight:700;letter-spacing:.4px;}
+  .hhx .head .meta{text-align:right;color:#fff;}
+  .hhx .head .meta .d{font-size:17px;font-weight:700;}
+  .hhx .head .meta .by{font-size:13px;color:#f6d9a0;}
+  .hhx .strip{background:#FFF6E5;padding:9px 30px;display:flex;justify-content:space-between;
+    font-size:12.5px;color:#6b5a2e;border-bottom:1px solid rgba(0,0,0,.06);}
+  .hhx .body{padding:16px 30px 24px;flex:1;}
+  .hhx .sec{margin-top:14px;}
+  .hhx .sec:first-child{margin-top:4px;}
+  .hhx .sec-h{color:#C8102E;font-size:13px;font-weight:800;letter-spacing:1px;
+    border-bottom:2px solid #FFC72C;padding-bottom:5px;margin-bottom:9px;text-transform:uppercase;}
+  .hhx .grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 26px;}
+  .hhx .row{display:flex;align-items:center;gap:12px;padding:5px 0;}
+  .hhx .thumb{width:46px;height:46px;border-radius:9px;background:#26211f;flex:none;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,.1);position:relative;}
+  .hhx .thumb img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;}
+  .hhx .thumb .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#FFC72C;font-weight:800;font-size:20px;text-transform:uppercase;}
+  .hhx .nm{flex:1;font-size:14.5px;color:#222;}
+  .hhx .val{font-size:15px;font-weight:800;color:#111;white-space:nowrap;}
+  .hhx .val .u{color:#a0a0a0;font-weight:500;font-size:12px;margin-left:2px;}
+  .hhx .row.uncounted .nm{color:#b3b3b3;}
+  .hhx .row.uncounted .val{color:#c2c2c2;font-weight:600;}
+  .hhx .row.uncounted .thumb{opacity:.35;}
+  .hhx .foot{background:#1a1a1a;color:#cfcfcf;font-size:11px;padding:10px 30px;
+    display:flex;justify-content:space-between;}
+
+  /* Printable ledger sheet — black ink (scoped under .hhp) */
+  .hhp{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .hhp .page{width:8.5in;min-height:11in;margin:0;background:#fff;color:#111;
+    padding:0.5in 0.6in;display:flex;flex-direction:column;}
+  .hhp .head{display:flex;align-items:flex-end;justify-content:space-between;
+    border-bottom:2px solid #111;padding-bottom:8px;}
+  .hhp .title{font-size:20px;font-weight:800;letter-spacing:.2px;}
+  .hhp .title .sub{font-size:12px;font-weight:600;color:#444;letter-spacing:1px;
+    text-transform:uppercase;display:block;margin-top:2px;}
+  .hhp .head .meta{text-align:right;font-size:12px;line-height:1.5;}
+  .hhp .head .meta b{font-size:13px;}
+  .hhp .barline{display:flex;justify-content:space-between;font-size:11px;color:#555;margin:6px 0 4px;}
+  .hhp .list{flex:1;}
+  .hhp .sec-h{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+    margin:10px 0 2px;padding-bottom:2px;border-bottom:1px solid #111;}
+  .hhp .row{display:flex;align-items:baseline;font-size:13px;padding:3px 2px;border-bottom:1px dotted #c8c8c8;}
+  .hhp .row .nm{flex:none;}
+  .hhp .row .dots{flex:1;border-bottom:1px dotted #d9d9d9;margin:0 6px 3px;}
+  .hhp .row .val{flex:none;font-weight:700;font-variant-numeric:tabular-nums;}
+  .hhp .row .val .u{font-weight:400;color:#777;font-size:11px;margin-left:3px;}
+  .hhp .row.uncounted .nm{color:#999;}
+  .hhp .row.uncounted .val{color:#bbb;}
+  .hhp .foot{font-size:10px;color:#777;border-top:1px solid #111;padding-top:6px;
+    margin-top:8px;display:flex;justify-content:space-between;}
+
+  /* Off-screen render host for html2canvas capture */
+  #hhRenderHost{position:absolute;left:-10000px;top:0;}
+  /* Printable host hidden on screen; revealed only while printing the ledger */
+  #hhPrintHost{display:none;}
+
+  @media print{
+    @page{size:letter;margin:0.5in 0.6in;}
+    body.hh-printing #app,body.hh-printing #overlayRoot,body.hh-printing #toastRoot,
+    body.hh-printing #hhRenderHost{display:none !important;}
+    body.hh-printing{background:#fff;}
+    body.hh-printing #hhPrintHost{display:block !important;position:static;left:auto;}
+    body.hh-printing #hhPrintHost .page{box-shadow:none;width:auto;min-height:auto;margin:0;padding:0;}
+    body.hh-printing #hhPrintHost .list,body.hh-printing #hhPrintHost .sec-h,
+    body.hh-printing #hhPrintHost .row{page-break-inside:avoid;}
+  }
 </style>
 </head>
 <body>
@@ -303,6 +385,9 @@
 <div id="overlayRoot"></div>
 <div id="toastRoot"></div>
 
+<!-- Vendored, offline (no runtime CDN): on-device image/PDF export rendering -->
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <script>
 "use strict";
 (function(){
@@ -983,6 +1068,183 @@ const Inv = (function(){
     renderQuick(); upd();
   }
 
+  /* ---------- Export sheets (detailed + printable, bound to live data) ---------- */
+  function fmtDateLong(s){
+    const d=new Date(String(s)+"T00:00");
+    if(isNaN(d)) return String(s||"");
+    return d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  }
+  function fmtStamp(){
+    const d=new Date();
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+      + " · " + d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  }
+  function expFilename(ext){ return "nightly-inventory-"+state.currentDate+"."+ext; }
+
+  // Shared model: items grouped by section in entry order, with totals + completeness.
+  function exportData(){
+    const map=bySection(); const sections=[]; let done=0, total=0;
+    for(const sec of state.catalog.sections){
+      const list=map[sec]||[]; if(!list.length) continue;
+      const items=list.map(it=>{
+        const counted=isCounted(it.id); total++; if(counted) done++;
+        return { name:it.name, slug:slug(it.name), counted,
+          valueStr: counted? fmt(totalFor(it,countsOf(it.id))) : "—",
+          unit: METHOD_UNIT[it.method]||"" };
+      });
+      sections.push({ name:sec, items });
+    }
+    return { storeName:shell.storeName||"", countedBy:night().countedBy||"",
+      dateLong:fmtDateLong(state.currentDate), stamp:fmtStamp(), done, total, sections };
+  }
+
+  // Detailed / shareable: branded red/gold, two-column photo grid (img/<slug>.png + initial fallback).
+  function detailedSheetHTML(d){
+    const secs=d.sections.map(sec=>`
+      <div class="sec">
+        <div class="sec-h">${esc(sec.name)}</div>
+        <div class="grid">
+          ${sec.items.map(it=>`
+            <div class="row${it.counted?"":" uncounted"}">
+              <div class="thumb"><span class="ini">${esc((it.name||"?").trim().charAt(0)||"?")}</span><img src="img/${esc(it.slug)}.png" alt="" onerror="this.remove()"></div>
+              <div class="nm">${esc(it.name)}</div>
+              <div class="val">${it.counted? esc(it.valueStr)+`<span class="u">${esc(it.unit)}</span>` : "—"}</div>
+            </div>`).join("")}
+        </div>
+      </div>`).join("");
+    return `<div class="page">
+      <div class="head">
+        <div class="brand"><div class="logo">🍕</div><div><div class="name">Hungry Howie's</div><div class="sub">NIGHTLY INVENTORY</div></div></div>
+        <div class="meta"><div class="d">${esc(d.dateLong)}</div>${d.countedBy?`<div class="by">Counted by ${esc(d.countedBy)}</div>`:""}</div>
+      </div>
+      <div class="strip"><span>${esc(d.storeName||"Inventory")}</span><span>${d.done} of ${d.total} items counted</span></div>
+      <div class="body">${secs}</div>
+      <div class="foot"><span>Generated by Howie Helper</span><span>${esc(d.stamp)}</span></div>
+    </div>`;
+  }
+
+  // Printable: minimal black-ink single-column ledger, no photos.
+  function printableSheetHTML(d){
+    const rows=d.sections.map(sec=>`
+      <div class="sec-h">${esc(sec.name)}</div>
+      ${sec.items.map(it=>`<div class="row${it.counted?"":" uncounted"}"><span class="nm">${esc(it.name)}</span><span class="dots"></span><span class="val">${it.counted? esc(it.valueStr)+`<span class="u">${esc(it.unit)}</span>` : "—"}</span></div>`).join("")}
+    `).join("");
+    return `<div class="page">
+      <div class="head">
+        <div class="title">Hungry Howie's<span class="sub">Nightly Inventory</span></div>
+        <div class="meta"><b>${esc(d.dateLong)}</b>${d.storeName?`<br>${esc(d.storeName)}`:""}${d.countedBy?`<br>Counted by ${esc(d.countedBy)}`:""}</div>
+      </div>
+      <div class="barline"><span>Listed in entry order — key into the store computer.</span><span>${d.done} of ${d.total} counted</span></div>
+      <div class="list">${rows}</div>
+      <div class="foot"><span>Howie Helper — Nightly Inventory</span><span>${esc(d.stamp)}</span></div>
+    </div>`;
+  }
+
+  function waitForImages(node){
+    const imgs=[...node.querySelectorAll("img")];
+    const settle=img=> (img.complete) ? Promise.resolve()
+      : new Promise(res=>{ img.addEventListener("load",res,{once:true}); img.addEventListener("error",res,{once:true}); });
+    return Promise.race([
+      Promise.all(imgs.map(settle)),
+      new Promise(res=>setTimeout(res,4000))
+    ]);
+  }
+
+  async function downloadOrShare(blob, ext){
+    if(!blob){ toast("Could not create file"); return; }
+    const name=expFilename(ext), type=blob.type||(ext==="pdf"?"application/pdf":"image/png");
+    try{
+      const file=new File([blob],name,{type});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"Nightly Inventory"}); return;
+      }
+    }catch(e){ /* fall through to download */ }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast(ext.toUpperCase()+" saved");
+  }
+
+  function savePdf(canvas){
+    try{
+      const { jsPDF }=window.jspdf;
+      const pdf=new jsPDF({unit:"pt",format:"letter",orientation:"portrait"});
+      const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+      let iw=pw, ih=pw*canvas.height/canvas.width;
+      if(ih>ph){ ih=ph; iw=ph*canvas.width/canvas.height; }
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pw-iw)/2,0,iw,ih);
+      downloadOrShare(pdf.output("blob"),"pdf");
+    }catch(e){ toast("Could not create PDF"); }
+  }
+
+  // Fallback when file-share is unavailable: saveable/printable preview of the themed image.
+  function openExportPreview(canvas){
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="hhxOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Nightly Inventory — Export</div></div>
+          <div class="hhx-preview"><img src="${canvas.toDataURL("image/png")}" alt="Export preview"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn good" id="hhxPng">Save PNG</button>
+            <button class="btn ghost" id="hhxPdf">Save PDF</button>
+          </div>
+          <div class="btn-row" style="margin-top:10px">
+            <button class="btn ghost" id="hhxPrint">Print sheet</button>
+            <button class="btn ghost" id="hhxClose">Close</button>
+          </div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("hhxOv").onclick=e=>{ if(e.target.id==="hhxOv") close(); };
+    document.getElementById("hhxClose").onclick=close;
+    document.getElementById("hhxPng").onclick=()=>canvas.toBlob(b=>downloadOrShare(b,"png"),"image/png");
+    document.getElementById("hhxPdf").onclick=()=>savePdf(canvas);
+    document.getElementById("hhxPrint").onclick=()=>{ close(); printSheet(); };
+  }
+
+  // Render the themed detailed sheet to a canvas on-device, then hand a PNG to the OS share sheet.
+  async function shareImage(){
+    const data=exportData();
+    const host=document.createElement("div");
+    host.id="hhRenderHost"; host.className="hhx";
+    host.innerHTML=detailedSheetHTML(data);
+    document.body.appendChild(host);
+    let canvas;
+    try{
+      await waitForImages(host);
+      canvas=await html2canvas(host.querySelector(".page"),
+        {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+    }catch(e){ host.remove(); toast("Could not create image"); return; }
+    host.remove();
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    if(blob){
+      try{
+        const file=new File([blob],expFilename("png"),{type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:"Nightly Inventory"}); return;
+        }
+      }catch(e){ /* cancelled/unsupported → show saveable preview below */ }
+    }
+    openExportPreview(canvas);
+  }
+
+  // Print only the minimal ledger via the browser print dialog (@page size:letter).
+  function printSheet(){
+    const host=document.createElement("div");
+    host.id="hhPrintHost"; host.className="hhp";
+    host.innerHTML=printableSheetHTML(exportData());
+    document.body.appendChild(host);
+    document.body.classList.add("hh-printing");
+    let cleaned=false;
+    const cleanup=()=>{ if(cleaned) return; cleaned=true;
+      host.remove(); document.body.classList.remove("hh-printing");
+      window.removeEventListener("afterprint",cleanup); };
+    window.addEventListener("afterprint",cleanup);
+    setTimeout(()=>{ try{ window.print(); }catch(e){} }, 60);
+    setTimeout(cleanup, 60000); // safety net if afterprint never fires
+  }
+
   /* ---------- Summary / Export ---------- */
   function renderSummary(){
     elBar.innerHTML=`
@@ -1019,7 +1281,8 @@ const Inv = (function(){
 
     elFooter.innerHTML=`
       <div class="btn-row">
-        <button class="btn ghost" id="shareBtn">Share</button>
+        <button class="btn ghost" id="printBtn">Print sheet</button>
+        <button class="btn ghost" id="shareBtn">Share image</button>
         <button class="btn good" id="copyBtn">Copy</button>
       </div>`;
 
@@ -1028,11 +1291,8 @@ const Inv = (function(){
       try{ await navigator.clipboard.writeText(txt); toast("Copied"); }
       catch(e){ const ta=document.getElementById("exp"); ta.focus(); ta.select(); document.execCommand&&document.execCommand("copy"); toast("Copied"); }
     };
-    document.getElementById("shareBtn").onclick=async()=>{
-      const txt=document.getElementById("exp").value;
-      if(navigator.share){ try{ await navigator.share({title:"Howie Helper — Nightly Inventory",text:txt}); }catch(e){} }
-      else { try{ await navigator.clipboard.writeText(txt); toast("Copied (share n/a)"); }catch(e){ toast("Share not supported"); } }
-    };
+    document.getElementById("shareBtn").onclick=()=>shareImage();
+    document.getElementById("printBtn").onclick=()=>printSheet();
     document.getElementById("resetBtn").onclick=()=>{
       if(confirm("Reset all counts for "+state.currentDate+"? This clears tonight's entries.")){
         state.nights[state.currentDate]={countedBy:night().countedBy||"",counts:{},counted:{}};

@@ -636,13 +636,13 @@ const SHELL_STORE = "howiehelper.shell.v1";
 // function in TOOL_VIEWS, and build the tool behind it. No home redesign needed.
 const TOOLS = [
   { id:"nightlyInventory", name:"Nightly Inventory",      icon:"📋", status:"active", descriptor:"Fast nightly count → on-hand totals to key in" },
+  { id:"nightlyNumbers",   name:"Nightly Numbers",        icon:"📊", status:"active", descriptor:"Nightly Daily-Numbers sheet → labor % & to-date, ready to share" },
+  { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
+  { id:"scheduleMaker",    name:"Schedule",               icon:"🗓️", status:"active", descriptor:"Build & edit the weekly staff schedule" },
   { id:"prepBackup",       name:"Prep / Backup Tracker",  icon:"🧰", status:"soon",   descriptor:"Track prep & backups through the night" },
   { id:"doughBuild",       name:"Dough Build",            icon:"🍞", status:"soon",   descriptor:"How much dough to build to" },
   { id:"sheetOut",         name:"Sheet-out Projector",    icon:"📐", status:"soon",   descriptor:"Project skins/dough to sheet out" },
-  { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
   { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
-  { id:"scheduleMaker",    name:"Schedule",               icon:"🗓️", status:"active", descriptor:"Build & edit the weekly staff schedule" },
-  { id:"nightlyNumbers",   name:"Nightly Numbers",        icon:"📊", status:"active", descriptor:"Nightly Daily-Numbers sheet → labor % & to-date, ready to share" },
 ];
 function toolById(id){ return TOOLS.find(t=>t.id===id) || null; }
 

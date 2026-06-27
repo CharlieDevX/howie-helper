@@ -441,6 +441,69 @@
   .pad .schhrs .ovbtn{padding:9px 12px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);
     color:var(--accent2);font-weight:700;font-size:12px;}
   .pad .schhrs .ovbtn.on{background:var(--accent2);border-color:var(--accent2);color:#06210f;}
+
+  /* ---------- Nightly Numbers (on-screen) ---------- */
+  .nn-hd{display:flex;align-items:center;gap:8px;margin:2px 0 10px;}
+  .nn-hd-mid{flex:1;text-align:center;line-height:1.2;}
+  .nn-hd-mid b{font-size:15px;}
+  .nn-hd-mid small{display:block;color:var(--muted);font-size:12px;}
+  .nn-nav{width:40px;height:40px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--ink);font-size:22px;font-weight:700;line-height:1;}
+  .nn-nav:active{background:var(--tap);}
+  .nn-scroll{height:auto;overflow-x:auto;overflow-y:visible;margin:0 -14px;}
+  table.nngrid{font-size:12.5px;}
+  table.nngrid td.rowlbl{min-width:120px;max-width:120px;white-space:normal;line-height:1.15;padding:5px 7px;}
+  table.nngrid td.rowlbl small{display:block;color:var(--accent2);font-size:9.5px;font-weight:600;}
+  table.nngrid .day{min-width:46px;text-align:center;cursor:pointer;}
+  table.nngrid td.nncell{text-align:center;color:var(--ink);min-width:46px;}
+  table.nngrid td.nncell.future{color:var(--line);}
+  table.nngrid tr.nncalc td{background:#2a2d27;}
+  table.nngrid tr.nncalc td.rowlbl{background:#2a2d27;color:var(--ink);font-weight:700;}
+  table.nngrid td.nncell.future{font-weight:400;}
+  table.nngrid .ddn{color:var(--muted);font-size:10px;}
+  table.nngrid td.good{color:var(--good);font-weight:700;}
+  table.nngrid td.bad{color:var(--danger);font-weight:700;}
+  table.nngrid td.pos{color:var(--good);}
+  table.nngrid td.neg{color:var(--danger);}
+  .nn-legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:12px 2px 4px;
+    color:var(--muted);font-size:11.5px;}
+  .nn-legend .sw{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px;}
+  .nn-legend .sw.ent{background:var(--panel);border:1px solid var(--line);}
+  .nn-legend .sw.cal{background:#2a2d27;border:1px solid var(--line);}
+  .nn-legend .sw.gd{background:var(--good);}
+  .nn-legend .sw.bd{background:var(--danger);}
+  .nn-legend .nn-tap{color:var(--accent2);font-weight:600;}
+  /* day-entry fields */
+  .nnf{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px;margin-bottom:9px;}
+  .nnf-l{flex:1;}
+  .nnf-l b{font-size:14.5px;font-weight:600;}
+  .nnf-l small{display:block;color:var(--accent2);font-size:11px;font-weight:600;}
+  .nnf-v{min-width:120px;text-align:right;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;color:var(--ink);font-size:16px;font-weight:700;
+    font-variant-numeric:tabular-nums;}
+  .nnf-v:active{background:var(--tap);}
+  .nnf-v .num{display:block;}
+  .nnf-x{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:1px;}
+  .nnf-otd{width:120px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:10px 12px;font-size:16px;text-align:right;font-weight:700;
+    font-variant-numeric:tabular-nums;}
+  .nn-subhd{margin:16px 2px 8px;color:var(--accent2);font-size:11.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.6px;}
+  .nn-results{margin:14px 0 4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:6px 12px;}
+  .nn-rhd{color:var(--accent2);font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.5px;margin:10px 0 4px;}
+  .nn-r{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;
+    border-bottom:1px solid var(--line);font-size:13.5px;}
+  .nn-r:last-child{border-bottom:none;}
+  .nn-r span{color:var(--muted);}
+  .nn-r b{font-variant-numeric:tabular-nums;}
+  .nn-r b.pos{color:var(--good);} .nn-r b.neg{color:var(--danger);}
+  .nn-padp{color:var(--muted);font-size:12.5px;margin:0 0 12px;text-align:center;}
+  .nn-plbl{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.4px;margin-bottom:4px;}
+  .pad .nn-plbl{margin-top:6px;}
 </style>
 </head>
 <body>
@@ -508,6 +571,7 @@ const TOOLS = [
   { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
   { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
   { id:"scheduleMaker",    name:"Schedule",               icon:"🗓️", status:"active", descriptor:"Build & edit the weekly staff schedule" },
+  { id:"nightlyNumbers",   name:"Nightly Numbers",        icon:"📊", status:"active", descriptor:"Nightly Daily-Numbers sheet → labor % & to-date, ready to share" },
 ];
 function toolById(id){ return TOOLS.find(t=>t.id===id) || null; }
 
@@ -547,6 +611,7 @@ function openTool(id){
   if(id==="nightlyInventory") Inv.reset();
   if(id==="drawerCash") DrawerCash.reset();
   if(id==="scheduleMaker") Sched.reset();
+  if(id==="nightlyNumbers") Numbers.reset();
   renderApp(); window.scrollTo(0,0);
 }
 
@@ -2477,10 +2542,601 @@ const Sched = (function(){
   return { STORE, render, reset, reload };
 })();
 
+/* ====================================================================
+   NIGHTLY NUMBERS — weekly "Daily Numbers" sheet (Mon–Sun, Monday reset)
+   Week overview grid → tap a day → single-day entry. Inputs only are
+   stored; every "to-date" / labor row is derived on render. Exports a
+   shareable image (group chat) and a printable/PDF, ported from the two
+   locked mockups in the planning folder.
+   ==================================================================== */
+const Numbers = (function(){
+  const STORE = "howiehelper.numbers.v1";
+  const overlayRoot = document.getElementById("overlayRoot");
+  const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];           // index 0=Mon..6=Sun
+  const DAYS_LONG = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  /* ---------------- date helpers (local TZ, same convention as Sched) ---------------- */
+  function isoOf(dt){
+    const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,"0"), d=String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
+  function parseISO(s){ return new Date(String(s)+"T00:00"); }
+  function mondayISO(dt){
+    const d=new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    const wd=d.getDay();                       // 0=Sun..6=Sat
+    d.setDate(d.getDate() + (wd===0 ? -6 : 1-wd));
+    return isoOf(d);
+  }
+  function mondayOfToday(){ return mondayISO(new Date()); }
+  function dayDate(startISO, i){ const d=parseISO(startISO); d.setDate(d.getDate()+i); return d; }
+  // "6/15 - 6/21" — Charlie's locked label format.
+  function weekRangeLabel(startISO){
+    const a=dayDate(startISO,0), b=dayDate(startISO,6);
+    return `${a.getMonth()+1}/${a.getDate()} - ${b.getMonth()+1}/${b.getDate()}`;
+  }
+
+  /* ---------------- state / persistence (own key, dev-isolated via deploy sed) ---------------- */
+  function blankDay(){
+    return { netSales:null, manHours:null, laborDollars:null, driverComp:null,
+             ddCount:null, otd:"", latePct:null, dailyCash:null, lunchSales:null };
+  }
+  function blankWeek(startISO){
+    return { weekStart:startISO,
+      projected:{ sales:Array(7).fill(null), manHours:Array(7).fill(null) },
+      days:{} };
+  }
+  function defaults(){
+    const m=mondayOfToday();
+    const s={ storeNumber:"84", ddRate:5.50, goals:{ otd:"18:00", latePct:8 },
+              weeks:{}, currentWeek:m };
+    s.weeks[m]=blankWeek(m);
+    return s;
+  }
+  function normalizeWeek(w, k){
+    w.weekStart=k;
+    if(!w.projected) w.projected={};
+    if(!Array.isArray(w.projected.sales))    w.projected.sales=Array(7).fill(null);
+    if(!Array.isArray(w.projected.manHours)) w.projected.manHours=Array(7).fill(null);
+    if(!w.days || typeof w.days!=="object") w.days={};
+  }
+  function load(){
+    let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
+    if(!s || typeof s!=="object" || !s.weeks || typeof s.weeks!=="object") return defaults();
+    if(typeof s.storeNumber!=="string") s.storeNumber=(s.storeNumber!=null?String(s.storeNumber):"84");
+    if(!(Number(s.ddRate)>0)) s.ddRate=5.50;
+    if(!s.goals || typeof s.goals!=="object") s.goals={};
+    if(typeof s.goals.otd!=="string") s.goals.otd="18:00";
+    if(!(Number(s.goals.latePct)>=0)) s.goals.latePct=8;
+    for(const k in s.weeks) normalizeWeek(s.weeks[k], k);
+    if(!s.currentWeek || !s.weeks[s.currentWeek]){
+      const keys=Object.keys(s.weeks).sort();
+      s.currentWeek = keys[0] || mondayOfToday();
+      if(!s.weeks[s.currentWeek]) s.weeks[s.currentWeek]=blankWeek(s.currentWeek);
+    }
+    return s;
+  }
+  let state=load();
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+  function week(){ return state.weeks[state.currentWeek]; }
+  function getDay(d){ return week().days[d] || null; }
+  function ensureDay(d){ if(!week().days[d]) week().days[d]=blankDay(); return week().days[d]; }
+  function ddRate(){ return Number(state.ddRate)||5.50; }
+
+  /* ---------------- calc engine (everything derived; nothing stored) ---------------- */
+  // A day is "entered" once its Net Daily Sales is keyed — the figure all
+  // to-date rows accumulate from (matches the mockups' demo data).
+  function num(v){ return (v==null||v==="")?null:(Number(v)); }
+  function netOf(d){ const dy=getDay(d); return dy? num(dy.netSales) : null; }
+  function entered(d){ return netOf(d)!=null; }
+  function dd$(dy){ return (Number(dy&&dy.ddCount)||0) * ddRate(); }
+  function totalLabor(dy){ return (Number(dy&&dy.laborDollars)||0)+(Number(dy&&dy.driverComp)||0)+dd$(dy); }
+  function salesToDate(d){ let t=0; for(let i=0;i<=d;i++){ const n=netOf(i); if(n!=null) t+=n; } return t; }
+  function totalLaborToDate(d){ let t=0; for(let i=0;i<=d;i++){ if(entered(i)) t+=totalLabor(getDay(i)); } return t; }
+  function laborPct(d){ const n=netOf(d); const dy=getDay(d); return (n>0&&dy)? totalLabor(dy)/n*100 : null; }
+  function laborPctToDate(d){ const s=salesToDate(d); return s>0? totalLaborToDate(d)/s*100 : null; }
+  function cashToDate(d){ let t=0; for(let i=0;i<=d;i++){ if(entered(i)) t+=(Number(getDay(i).dailyCash)||0); } return t; }
+  function lastEnteredDay(){ let last=-1; for(let d=0;d<7;d++) if(entered(d)) last=d; return last; }
+  function daysEnteredCount(){ let c=0; for(let d=0;d<7;d++) if(entered(d)) c++; return c; }
+  function mmssToSec(s){ const m=String(s||"").match(/^(\d{1,2}):([0-5]\d)$/); return m? Number(m[1])*60+Number(m[2]) : null; }
+  function otdMeets(s){ const a=mmssToSec(s), g=mmssToSec(state.goals.otd); return (a!=null&&g!=null)? a<=g : null; }
+  function lateMeets(n){ return n==null? null : (Number(n) < (Number(state.goals.latePct)||8)); }
+
+  /* ---------------- formatters ---------------- */
+  function commaInt(s){ return String(s).replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+  function money2(n){ n=Number(n)||0; const neg=n<0; n=Math.abs(n); const f=n.toFixed(2).split(".");
+    return (neg?"-":"")+commaInt(f[0])+"."+f[1]; }
+  function numStr(n){ // trim trailing zeros, thousands separators (projected sales/hours)
+    if(n==null||n==="") return "";
+    let r=Math.round(Number(n)*100)/100; const neg=r<0; r=Math.abs(r);
+    let s=(Math.abs(r-Math.round(r))<1e-9)? String(Math.round(r)) : String(r);
+    const p=s.split("."); return (neg?"-":"")+commaInt(p[0])+(p[1]?("."+p[1]):"");
+  }
+  function pctStr(n){ return n==null? "" : (Math.round(Number(n)*100)/100).toFixed(2)+"%"; }
+  function signed(n){ n=Math.round((Number(n)||0)*100)/100; if(n===0) return "0.00"; return (n>0?"+":"-")+Math.abs(n).toFixed(2); }
+
+  /* ---------------- row model: one source feeds the grid + both exports ----------------
+     Each row produces a per-day cell { text, blank, calc, goal:'good'|'bad'|null,
+     sign:'pos'|'neg'|null }. Renderers map those to their own classes
+     (screen + shareable use good/bad colors; printable uses a grey "miss" shade). */
+  const ROWS = [
+    { key:"net",        label:"Net Daily Sales",        calc:false },
+    { key:"projSales",  label:"Projected Sales",        calc:false },
+    { key:"salesToDate",label:"Sales to Date",          calc:true  },
+    { key:"manHours",   label:"Daily Man Hours",        calc:false },
+    { key:"projHours",  label:"Projected Man Hours",    calc:false },
+    { key:"labor",      label:"Labor $",                calc:false },
+    { key:"driverComp", label:"Driver Comp $",          calc:false },
+    { key:"dd",         label:"Door Dash $",            calc:false, ddhint:true },
+    { key:"totalLabor", label:"Total Labor $",          calc:true  },
+    { key:"tlToDate",   label:"Total Labor $ to Date",  calc:true  },
+    { key:"laborPct",   label:"Labor %",                calc:true  },
+    { key:"laborPctTD", label:"Labor % to Date",        calc:true  },
+    { key:"otd",        label:"OTD",                    calc:false, goal:"otd"  },
+    { key:"latePct",    label:"Late %",                 calc:false, goal:"late" },
+    { key:"dailyCash",  label:"Daily Cash +/-",         calc:false },
+    { key:"totalCash",  label:"Total Cash +/-",         calc:true  },
+    { key:"lunch",      label:"Lunch Sales",            calc:false },
+  ];
+  function rowSub(r){
+    if(r.goal==="otd")  return "goal ≤ "+(state.goals.otd||"18:00");
+    if(r.goal==="late") return "goal < "+(Number(state.goals.latePct)||8)+"%";
+    return "";
+  }
+  // Compute one cell for row.key on weekday d.
+  function cellOf(key, d){
+    const dy=getDay(d), w=week(), ent=entered(d);
+    const blank=(text)=>({ text:"—", blank:true });
+    const val =(text,extra)=>Object.assign({ text, blank:false }, extra||{});
+    switch(key){
+      case "net":        { const v=netOf(d); return v==null? blank() : val(money2(v)); }
+      case "projSales":  { const v=w.projected.sales[d]; return v==null? blank() : val(numStr(v)); }
+      case "salesToDate":return ent? val(money2(salesToDate(d)), {calc:true}) : Object.assign(blank(),{calc:true});
+      case "manHours":   { const v=dy?num(dy.manHours):null; return v==null? blank() : val(numStr(v)); }
+      case "projHours":  { const v=w.projected.manHours[d]; return v==null? blank() : val(numStr(v)); }
+      case "labor":      { const v=dy?num(dy.laborDollars):null; return v==null? blank() : val(money2(v)); }
+      case "driverComp": { const v=dy?num(dy.driverComp):null; return v==null? blank() : val(money2(v)); }
+      case "dd":         { const c=dy?num(dy.ddCount):null; return c==null? blank() : val(money2(c*ddRate()), {dd:c}); }
+      case "totalLabor": return ent? val(money2(totalLabor(dy)), {calc:true}) : Object.assign(blank(),{calc:true});
+      case "tlToDate":   return ent? val(money2(totalLaborToDate(d)), {calc:true}) : Object.assign(blank(),{calc:true});
+      case "laborPct":   { const v=laborPct(d); return (ent&&v!=null)? val(pctStr(v),{calc:true}) : Object.assign(blank(),{calc:true}); }
+      case "laborPctTD": { const v=laborPctToDate(d); return (ent&&v!=null)? val(pctStr(v),{calc:true}) : Object.assign(blank(),{calc:true}); }
+      case "otd":        { const v=dy&&dy.otd? dy.otd : null; if(!v) return blank();
+                           const m=otdMeets(v); return val(v, {goal: m===null?null:(m?"good":"bad")}); }
+      case "latePct":    { const v=dy?num(dy.latePct):null; if(v==null) return blank();
+                           const m=lateMeets(v); return val(numStr(v)+"%", {goal: m===null?null:(m?"good":"bad")}); }
+      case "dailyCash":  { if(!ent && !(dy&&dy.dailyCash!=null)) return blank();
+                           const v=Number(dy&&dy.dailyCash)||0; return val(signed(v), {sign: v>0?"pos":(v<0?"neg":null)}); }
+      case "totalCash":  { if(!ent) return Object.assign(blank(),{calc:true});
+                           const v=cashToDate(d); return val(signed(v), {calc:true, sign: v>0?"pos":(v<0?"neg":null)}); }
+      case "lunch":      { const v=dy?num(dy.lunchSales):null; return v==null? blank() : val(money2(v)); }
+    }
+    return blank();
+  }
+
+  /* ---------------- shared export data model ---------------- */
+  function fmtStamp(){
+    const d=new Date();
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})
+      + " · " + d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  }
+  function exportData(){
+    const start=state.currentWeek;
+    const dates=[]; for(let d=0;d<7;d++) dates.push(dayDate(start,d).getDate());
+    const last=lastEnteredDay();
+    const rows=ROWS.map(r=>({
+      key:r.key, label:r.label, sub:rowSub(r), calc:!!r.calc,
+      cells:[0,1,2,3,4,5,6].map(d=>cellOf(r.key,d))
+    }));
+    return {
+      storeNumber: state.storeNumber||"84",
+      weekRange: weekRangeLabel(start),
+      throughLabel: last>=0 ? DAYS_LONG[last] : null,
+      daysEntered: daysEnteredCount(),
+      dates, rows,
+      kpis: last>=0 ? {
+        salesToDate: money2(salesToDate(last)),
+        laborPctTD:  laborPctToDate(last)!=null? pctStr(laborPctToDate(last)) : "—",
+        cashToDate:  signed(cashToDate(last)),
+        cashSign:    cashToDate(last)>0?"pos":(cashToDate(last)<0?"neg":"")
+      } : null,
+      stamp: fmtStamp()
+    };
+  }
+
+  /* ---------------- router ---------------- */
+  let route={ name:"overview", d:null };
+  function go(name, d){ route={name, d:(d==null?null:d)}; render(); window.scrollTo(0,0); }
+  function reset(){ route={name:"overview", d:null}; }
+  function reload(){ state=load(); route={name:"overview", d:null}; }
+  function render(){
+    if(route.name==="day") renderDay();
+    else if(route.name==="weeks") renderWeeks();
+    else if(route.name==="settings") renderSettings();
+    else renderOverview();
+  }
+
+  /* ---------------- OVERVIEW (week grid) ---------------- */
+  function renderOverview(){
+    const start=state.currentWeek;
+    elBar.innerHTML=`
+      ${homeBtnHTML("nnHome")}
+      <h1>Nightly Numbers <span class="sub">Store ${esc(state.storeNumber||"84")}</span></h1>
+      <button class="iconbtn" id="nnWeeks" aria-label="Weeks">📅</button>
+      <button class="iconbtn" id="nnSettings" aria-label="Settings">⚙︎</button>`;
+    elView.className="";
+
+    // header row
+    let head=`<th class="rowlbl">&nbsp;</th>`;
+    for(let d=0; d<7; d++){
+      head+=`<th class="day" data-d="${d}">${DAYS[d]}<span class="dn">${dayDate(start,d).getDate()}</span></th>`;
+    }
+    // body rows
+    let body="";
+    for(const r of ROWS){
+      const sub=rowSub(r);
+      body+=`<tr class="${r.calc?'nncalc':''}">`
+          + `<td class="rowlbl">${esc(r.label)}${sub?`<small>${esc(sub)}</small>`:''}</td>`;
+      for(let d=0; d<7; d++){
+        const c=cellOf(r.key, d);
+        let cls="nncell"+(c.blank?" future":"");
+        if(c.goal==="good") cls+=" good"; else if(c.goal==="bad") cls+=" bad";
+        if(c.sign==="pos") cls+=" pos"; else if(c.sign==="neg") cls+=" neg";
+        const ddhint = (r.key==="dd" && c.dd!=null) ? `<span class="ddn"> (${c.dd})</span>` : "";
+        body+=`<td class="${cls}" data-d="${d}">${esc(c.text)}${ddhint}</td>`;
+      }
+      body+=`</tr>`;
+    }
+
+    const enteredN=daysEnteredCount();
+    elView.innerHTML=`
+      <div class="nn-hd">
+        <button class="nn-nav" id="nnPrev" aria-label="Previous week">‹</button>
+        <div class="nn-hd-mid"><b>Week of ${esc(weekRangeLabel(start))}</b><small>${enteredN} of 7 days entered</small></div>
+        <button class="nn-nav" id="nnNext" aria-label="Next week">›</button>
+      </div>
+      <div class="sched-scroll nn-scroll">
+        <table class="sched nngrid">
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="nn-legend">
+        <span><i class="sw ent"></i>Entered</span>
+        <span><i class="sw cal"></i>Calculated</span>
+        <span><i class="sw gd"></i>Meets goal</span>
+        <span><i class="sw bd"></i>Missed goal</span>
+        <span class="nn-tap">Tap a day to enter numbers</span>
+      </div>`;
+
+    elFooter.innerHTML=`
+      <div class="btn-row">
+        <button class="btn ghost" id="nnProj">Set weekly projected</button>
+        <button class="btn primary" id="nnExport">Export / Share &nbsp;→</button>
+      </div>`;
+
+    document.getElementById("nnHome").onclick=openHome;
+    document.getElementById("nnWeeks").onclick=()=>go("weeks");
+    document.getElementById("nnSettings").onclick=()=>go("settings");
+    document.getElementById("nnPrev").onclick=()=>shiftWeek(-7);
+    document.getElementById("nnNext").onclick=()=>shiftWeek(7);
+    document.getElementById("nnProj").onclick=openWeeklyProjected;
+    document.getElementById("nnExport").onclick=openExportChooser;
+    elView.querySelectorAll("[data-d]").forEach(el=>{
+      el.onclick=()=>go("day", Number(el.getAttribute("data-d")));
+    });
+  }
+  function shiftWeek(deltaDays){
+    const d=parseISO(state.currentWeek); d.setDate(d.getDate()+deltaDays);
+    const mon=mondayISO(d);
+    if(!state.weeks[mon]) state.weeks[mon]=blankWeek(mon);
+    state.currentWeek=mon; save(); go("overview");
+  }
+
+  /* ---------------- SINGLE-DAY ENTRY ---------------- */
+  // Numeric fields: tap → calculator numpad (decimal/±-aware). OTD is mm:ss text.
+  const DAY_FIELDS = [
+    { key:"netSales",     label:"Net Daily Sales",   money:true,  decimal:true  },
+    { key:"manHours",     label:"Daily Man Hours",   decimal:true },
+    { key:"laborDollars", label:"Labor $",           money:true,  decimal:true  },
+    { key:"driverComp",   label:"Driver Comp $",     money:true,  decimal:true  },
+    { key:"ddCount",      label:"DoorDash deliveries", decimal:false, dd:true },
+    { key:"otd",          label:"OTD",               otd:true     },
+    { key:"latePct",      label:"Late %",            decimal:true, pct:true },
+    { key:"dailyCash",    label:"Daily Cash +/-",    money:true,  decimal:true, signed:true },
+    { key:"lunchSales",   label:"Lunch Sales",       money:true,  decimal:true  },
+  ];
+  function fieldValStr(f){
+    const dy=getDay(route.d);
+    const v = dy? dy[f.key] : null;
+    if(f.otd) return v? esc(v) : "—";
+    if(v==null||v==="") return "—";
+    if(f.dd){ return numStr(v)+` <span class="nnf-x">× $${money2(ddRate())} = $${money2((Number(v)||0)*ddRate())}</span>`; }
+    if(f.money) return "$"+money2(v);
+    if(f.pct) return numStr(v)+"%";
+    return numStr(v);
+  }
+  function renderDay(){
+    const d=route.d, start=state.currentWeek;
+    const dt=dayDate(start,d);
+    elBar.innerHTML=`
+      <button class="iconbtn" id="nnBack" aria-label="Back">←</button>
+      <h1>${DAYS_LONG[d]} <span class="sub">${MONTHS[dt.getMonth()]} ${dt.getDate()}</span></h1>`;
+    elView.className="";
+
+    // input cards
+    let fields = DAY_FIELDS.map(f=>`
+      <div class="nnf" data-k="${f.key}">
+        <div class="nnf-l"><b>${esc(f.label)}</b>${ (f.key==="otd")?'<small>goal ≤ '+esc(state.goals.otd||"18:00")+'</small>' : (f.key==="latePct")?'<small>goal < '+(Number(state.goals.latePct)||8)+'%</small>' : '' }</div>
+        ${ f.otd
+            ? `<input class="nnf-otd" id="nnf-${f.key}" inputmode="numeric" placeholder="mm:ss" value="${esc((getDay(d)&&getDay(d).otd)||'')}">`
+            : `<button class="nnf-v" id="nnf-${f.key}"><span class="num">${fieldValStr(f)}</span></button>` }
+      </div>`).join("");
+
+    // weekly projected (editable per day here)
+    const ps=week().projected.sales[d], ph=week().projected.manHours[d];
+    fields += `
+      <div class="nn-subhd">Weekly projected (per day)</div>
+      <div class="nnf" data-k="projSales">
+        <div class="nnf-l"><b>Projected Sales</b></div>
+        <button class="nnf-v" id="nnf-projSales"><span class="num">${ps==null?"—":("$"+numStr(ps))}</span></button>
+      </div>
+      <div class="nnf" data-k="projHours">
+        <div class="nnf-l"><b>Projected Man Hours</b></div>
+        <button class="nnf-v" id="nnf-projHours"><span class="num">${ph==null?"—":numStr(ph)}</span></button>
+      </div>`;
+
+    elView.innerHTML=`
+      ${fields}
+      <div class="nn-results" id="nnResults"></div>`;
+    elFooter.innerHTML=`<button class="btn primary" id="nnDayDone">Done &nbsp;→</button>`;
+
+    document.getElementById("nnBack").onclick=()=>go("overview");
+    document.getElementById("nnDayDone").onclick=()=>go("overview");
+
+    // wire numeric fields → numpad
+    DAY_FIELDS.forEach(f=>{
+      if(f.otd){
+        const inp=document.getElementById("nnf-"+f.key);
+        inp.oninput=()=>{ ensureDay(d).otd=inp.value.trim(); save(); refreshResults(); };
+        return;
+      }
+      const btn=document.getElementById("nnf-"+f.key);
+      btn.onclick=()=>{
+        const dy=getDay(d); const cur=dy? dy[f.key] : null;
+        openNumpad(f.label, cur, f.decimal!==false, v=>{
+          const dd=ensureDay(d);
+          dd[f.key] = (v===0 && cur==null && !f.signed) ? 0 : v; // keep explicit 0
+          save();
+          btn.querySelector(".num").innerHTML=fieldValStr(f);
+          refreshResults();
+        });
+      };
+    });
+    // projected (per-day) numpad
+    document.getElementById("nnf-projSales").onclick=()=>{
+      const cur=week().projected.sales[d];
+      openNumpad("Projected Sales", cur, true, v=>{ week().projected.sales[d]=v; save();
+        document.querySelector("#nnf-projSales .num").innerHTML = v==null?"—":("$"+numStr(v)); refreshResults(); });
+    };
+    document.getElementById("nnf-projHours").onclick=()=>{
+      const cur=week().projected.manHours[d];
+      openNumpad("Projected Man Hours", cur, true, v=>{ week().projected.manHours[d]=v; save();
+        document.querySelector("#nnf-projHours .num").textContent = v==null?"—":numStr(v); refreshResults(); });
+    };
+
+    refreshResults();
+  }
+  function refreshResults(){
+    const d=route.d, host=document.getElementById("nnResults"); if(!host) return;
+    const line=(lbl,val,cls)=>`<div class="nn-r"><span>${esc(lbl)}</span><b class="${cls||''}">${esc(val)}</b></div>`;
+    const ddc = getDay(d)? (num(getDay(d).ddCount)||0) : 0;
+    const tl  = totalLabor(getDay(d)||blankDay());
+    const lp  = laborPct(d), lptd=laborPctToDate(d), ctd=cashToDate(d);
+    let today=`<div class="nn-rhd">This day</div>`
+      + line("Door Dash $", "$"+money2(ddc*ddRate()))
+      + line("Sales to Date", "$"+money2(salesToDate(d)))
+      + line("Total Labor $", "$"+money2(tl))
+      + line("Total Labor $ to Date", "$"+money2(totalLaborToDate(d)))
+      + line("Labor %", lp!=null? pctStr(lp):"—")
+      + line("Labor % to Date", lptd!=null? pctStr(lptd):"—")
+      + line("Total Cash +/-", signed(ctd), ctd>0?"pos":(ctd<0?"neg":""));
+    let prior="";
+    if(d>0 && entered(d-1)){
+      const pc=cashToDate(d-1), pl=laborPctToDate(d-1);
+      prior=`<div class="nn-rhd">Through ${esc(DAYS_LONG[d-1])} (prior)</div>`
+        + line("Sales to Date", "$"+money2(salesToDate(d-1)))
+        + line("Total Labor $ to Date", "$"+money2(totalLaborToDate(d-1)))
+        + line("Labor % to Date", pl!=null? pctStr(pl):"—")
+        + line("Total Cash +/-", signed(pc), pc>0?"pos":(pc<0?"neg":""));
+    }
+    host.innerHTML=today+prior;
+  }
+
+  /* ---------------- WEEKLY PROJECTED (bulk set all 7 days) ---------------- */
+  function openWeeklyProjected(){
+    const w=week();
+    const firstNonNull=a=>{ for(const v of a) if(v!=null) return v; return ""; };
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="nnProjOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Weekly projected · Week of ${esc(weekRangeLabel(state.currentWeek))}</div></div>
+          <p class="nn-padp">Sets the value for all 7 days. Still editable per day.</p>
+          <label class="nn-plbl">Projected Sales (all days)</label>
+          <input class="schfield" id="nnProjSales" inputmode="decimal" placeholder="e.g. 1000" value="${esc(String(firstNonNull(w.projected.sales)))}">
+          <label class="nn-plbl">Projected Man Hours (all days)</label>
+          <input class="schfield" id="nnProjHours" inputmode="decimal" placeholder="e.g. 15" value="${esc(String(firstNonNull(w.projected.manHours)))}">
+          <div class="btn-row" style="margin-top:6px">
+            <button class="btn ghost" id="nnProjCancel">Cancel</button>
+            <button class="btn primary" id="nnProjApply">Apply to week</button>
+          </div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("nnProjOv").onclick=e=>{ if(e.target.id==="nnProjOv") close(); };
+    document.getElementById("nnProjCancel").onclick=close;
+    document.getElementById("nnProjApply").onclick=()=>{
+      const sv=document.getElementById("nnProjSales").value.trim();
+      const hv=document.getElementById("nnProjHours").value.trim();
+      if(sv!==""){ const n=Number(sv); if(!isNaN(n)) w.projected.sales=Array(7).fill(n); }
+      if(hv!==""){ const n=Number(hv); if(!isNaN(n)) w.projected.manHours=Array(7).fill(n); }
+      save(); close(); toast("Weekly projected set"); renderOverview();
+    };
+  }
+
+  /* ---------------- WEEKS (history / picker) ---------------- */
+  function renderWeeks(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="nnBack" aria-label="Back">←</button>
+      <h1>Weeks</h1>`;
+    elView.className="";
+    const keys=Object.keys(state.weeks).sort().reverse();
+    let list="";
+    for(const k of keys){
+      const cur=k===state.currentWeek;
+      let n=0; for(let d=0;d<7;d++){ const dy=state.weeks[k].days[d]; if(dy&&dy.netSales!=null) n++; }
+      list+=`
+        <div class="set-item" data-wk="${esc(k)}" style="${cur?'border-color:var(--accent2);':''}">
+          <div class="top" style="margin:0;">
+            <div style="flex:1;"><b style="font-size:15px;">Week of ${esc(weekRangeLabel(k))}</b>
+              <small style="color:var(--muted);display:block;">${esc(k)} · ${n} of 7 entered${cur?' · current':''}</small></div>
+            ${keys.length>1?`<button class="miniicon del wkdel" aria-label="Delete week">🗑</button>`:''}
+          </div>
+        </div>`;
+    }
+    elView.innerHTML=`
+      ${list}
+      <div class="setcard">
+        <h3>Jump to week</h3>
+        <p>Pick any date — it snaps to that week's Monday.</p>
+        <input class="txt" type="date" id="nnNewWk" value="${esc(mondayOfToday())}">
+        <div style="height:10px;"></div>
+        <button class="btn primary" id="nnNewWkBtn">Go to week</button>
+      </div>`;
+    elFooter.innerHTML="";
+    document.getElementById("nnBack").onclick=()=>go("overview");
+    elView.querySelectorAll(".set-item[data-wk]").forEach(el=>{
+      const k=el.getAttribute("data-wk");
+      el.onclick=e=>{ if(e.target.closest(".wkdel")) return; state.currentWeek=k; save(); go("overview"); };
+      const del=el.querySelector(".wkdel");
+      if(del) del.onclick=()=>{
+        if(confirm(`Delete Week of ${weekRangeLabel(k)}? This erases that week's numbers.`)){
+          delete state.weeks[k];
+          if(state.currentWeek===k) state.currentWeek=Object.keys(state.weeks).sort()[0]||mondayOfToday();
+          if(!state.weeks[state.currentWeek]) state.weeks[state.currentWeek]=blankWeek(state.currentWeek);
+          save(); renderWeeks();
+        }
+      };
+    });
+    document.getElementById("nnNewWkBtn").onclick=()=>{
+      const raw=document.getElementById("nnNewWk").value;
+      if(!raw){ toast("Pick a date"); return; }
+      const mon=mondayISO(parseISO(raw));
+      if(!state.weeks[mon]) state.weeks[mon]=blankWeek(mon);
+      state.currentWeek=mon; save(); go("overview");
+    };
+  }
+
+  /* ---------------- SETTINGS (store #, DD rate, goals) ---------------- */
+  function renderSettings(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="nnBack" aria-label="Back">←</button>
+      <h1>Numbers Settings</h1>`;
+    elView.className="";
+    elView.innerHTML=`
+      <div class="setcard">
+        <h3>Store</h3>
+        <label class="nn-plbl">Store #</label>
+        <input class="txt" id="nnStore" inputmode="numeric" value="${esc(state.storeNumber||"84")}">
+      </div>
+      <div class="setcard">
+        <h3>Door Dash</h3>
+        <p>Door Dash $ = deliveries × this rate.</p>
+        <label class="nn-plbl">Rate per delivery ($)</label>
+        <input class="txt" id="nnRate" inputmode="decimal" value="${esc(String(ddRate()))}">
+      </div>
+      <div class="setcard">
+        <h3>Goals</h3>
+        <p>OTD colored green if ≤ goal; Late % green if &lt; goal.</p>
+        <label class="nn-plbl">OTD goal (mm:ss)</label>
+        <input class="txt" id="nnGoalOtd" inputmode="numeric" value="${esc(state.goals.otd||"18:00")}">
+        <div style="height:10px;"></div>
+        <label class="nn-plbl">Late % goal (&lt;)</label>
+        <input class="txt" id="nnGoalLate" inputmode="decimal" value="${esc(String(Number(state.goals.latePct)||8))}">
+      </div>
+      <div class="setcard">
+        <h3>Demo data</h3>
+        <p>Load the Week-of-6/15 sample (Mon–Thu) from the spec to check the math & exports.</p>
+        <button class="btn ghost" id="nnDemo">Load 6/15 demo week</button>
+      </div>`;
+    elFooter.innerHTML="";
+    document.getElementById("nnBack").onclick=()=>go("overview");
+    document.getElementById("nnStore").oninput=e=>{ state.storeNumber=e.target.value.trim()||"84"; save(); };
+    document.getElementById("nnRate").onchange=e=>{ const n=Number(e.target.value); if(n>0){ state.ddRate=n; save(); } };
+    document.getElementById("nnGoalOtd").onchange=e=>{ const v=e.target.value.trim(); if(/^\d{1,2}:[0-5]\d$/.test(v)){ state.goals.otd=v; save(); } else toast("Use mm:ss"); };
+    document.getElementById("nnGoalLate").onchange=e=>{ const n=Number(e.target.value); if(!isNaN(n)){ state.goals.latePct=n; save(); } };
+    document.getElementById("nnDemo").onclick=()=>{ loadDemoWeek(); save(); toast("Demo week loaded"); go("overview"); };
+  }
+  // Mockup demo data (internally consistent). Used only via the Settings button.
+  function loadDemoWeek(){
+    const k="2026-06-15";
+    const w=blankWeek(k);
+    w.projected.sales=[800,800,1000,1100,1700,1600,1000];
+    w.projected.manHours=[12.5,12.5,13,16,26,25,15];
+    w.days={
+      0:{ netSales:660.76,  manHours:12.78, laborDollars:190.98, driverComp:0,    ddCount:8,  otd:"17:20", latePct:0,    dailyCash:0.47, lunchSales:null },
+      1:{ netSales:1572.28, manHours:13.85, laborDollars:219.38, driverComp:0,    ddCount:16, otd:"20:47", latePct:25,   dailyCash:0.88, lunchSales:null },
+      2:{ netSales:1339.94, manHours:14.97, laborDollars:230.52, driverComp:6.51, ddCount:14, otd:"21:00", latePct:12.5, dailyCash:1.66, lunchSales:null },
+      3:{ netSales:944.64,  manHours:14.18, laborDollars:239.34, driverComp:0,    ddCount:11, otd:"15:35", latePct:0,    dailyCash:0,    lunchSales:null },
+    };
+    state.weeks[k]=w; state.currentWeek=k; state.storeNumber="84";
+  }
+
+  /* ---------------- export (chooser → shareable image / printable PDF) ---------------- */
+  function openExportChooser(){ exportStub(); }
+  function exportStub(){ toast("Export coming next"); }   // replaced in export commit
+
+  /* ---------------- self-test (verifies calc engine vs. the mockups) ---------------- */
+  function _selftest(){
+    const saved={ weeks:state.weeks, currentWeek:state.currentWeek, storeNumber:state.storeNumber };
+    try{
+      loadDemoWeek();
+      const approx=(a,b)=>Math.abs(a-b)<0.005;
+      const checks=[
+        ["salesToDate Mon", salesToDate(0), 660.76],
+        ["salesToDate Tue", salesToDate(1), 2233.04],
+        ["salesToDate Thu", salesToDate(3), 4517.62],
+        ["totalLabor Mon",  totalLabor(getDay(0)), 234.98],
+        ["totalLabor Wed",  totalLabor(getDay(2)), 314.03],
+        ["tlToDate Tue",    totalLaborToDate(1), 542.36],
+        ["tlToDate Thu",    totalLaborToDate(3), 1156.23],
+        ["laborPct Mon",    laborPct(0), 35.56],
+        ["laborPctTD Tue",  laborPctToDate(1), 24.29],
+        ["laborPctTD Thu",  laborPctToDate(3), 25.59],
+        ["cashToDate Tue",  cashToDate(1), 1.35],
+        ["cashToDate Thu",  cashToDate(3), 3.01],
+      ];
+      let ok=true;
+      for(const [name,got,exp] of checks){
+        if(!approx(Math.round(got*100)/100, exp)){ ok=false; console.error(`Numbers calc FAIL: ${name} -> ${got}, expected ${exp}`); }
+      }
+      if(ok) console.log("Numbers calc self-test: "+checks.length+"/"+checks.length+" OK");
+      return ok;
+    } finally {
+      state.weeks=saved.weeks; state.currentWeek=saved.currentWeek; state.storeNumber=saved.storeNumber;
+    }
+  }
+  try{ _selftest(); }catch(e){}
+
+  return { STORE, render, reset, reload, exportData, _selftest };
+})();
+
 const TOOL_VIEWS = {
   nightlyInventory: ()=>Inv.render(),
   drawerCash: ()=>DrawerCash.render(),
   scheduleMaker: ()=>Sched.render(),
+  nightlyNumbers: ()=>Numbers.render(),
 };
 
 /* ====================================================================

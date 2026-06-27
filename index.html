@@ -378,6 +378,9 @@
     /* Nightly Numbers printable: keep calc/miss shading in print/PDF */
     body.hh-printing #hhPrintHost.nnp tr.calc th,body.hh-printing #hhPrintHost.nnp tr.calc td,
     body.hh-printing #hhPrintHost.nnp td.miss{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    /* Schedule printable: keep black section bands, grey calc/Total shading in print/PDF */
+    body.hh-printing #hhPrintHost.schp tr.band td,body.hh-printing #hhPrintHost.schp tr.calc td,
+    body.hh-printing #hhPrintHost.schp td.ptot,body.hh-printing #hhPrintHost.schp td.off{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
   /* ---------- Schedule Maker ---------- */
@@ -444,6 +447,24 @@
   .pad .schhrs .ovbtn{padding:9px 12px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);
     color:var(--accent2);font-weight:700;font-size:12px;}
   .pad .schhrs .ovbtn.on{background:var(--accent2);border-color:var(--accent2);color:#06210f;}
+  /* Desktop: the schedule is built on the store PC, so expand to the full week
+     (Name + 7 days x shift+h + Total) with no horizontal scroll. Phone unchanged. */
+  @media (min-width:900px){
+    body.sched-grid #app{max-width:1180px;}   /* lift the phone-width cap for the full-week grid */
+    .sched-scroll{overflow:visible;height:auto;margin:0;}
+    table.sched{width:100%;table-layout:fixed;font-size:13.5px;}
+    .sched th,.sched td{padding:8px 6px;height:auto;}
+    .sched .nmcol{min-width:0;max-width:none;width:170px;}
+    .sched .pname{max-width:none;}
+    .sched .day{min-width:0;}                 /* 7 shift columns share the leftover width evenly */
+    .sched .hr{min-width:0;width:42px;}
+    .sched .totcol{min-width:0;width:66px;}
+  }
+  /* Export chooser orientation toggle */
+  .schseg{display:flex;gap:8px;}
+  .schseg button{flex:1;padding:10px;border-radius:10px;background:var(--panel2);
+    border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:14px;}
+  .schseg button.on{background:var(--accent2);border-color:var(--accent2);color:#06210f;}
 
   /* ---------- Nightly Numbers (on-screen) ---------- */
   .nn-hd{display:flex;align-items:center;gap:8px;margin:2px 0 10px;}
@@ -575,6 +596,130 @@
   .nnp .ddp{ font-weight:600; }
   .nnp .ft{ margin-top:10px; padding-top:9px; font-size:11px; color:#222; display:flex; gap:24px; flex-wrap:wrap; border-top:1.5px solid #000; }
   .nnp .ft b{ color:#000; }
+
+  /* ==================================================================
+     Schedule export — ported from the locked mockups, scoped under
+     .schx (shareable / branded) and .schp (printable / simple) so the
+     mockups' bare selectors can't clobber the app or other exports.
+     Landscape sizing is the base; .portrait overrides carry portrait sizes.
+     ================================================================== */
+  .schx{ --red:#C8102E; --red-dk:#8a1015; --gold:#FFC72C; --cream:#FFF6E5; --ink:#1f1c1a;
+         --calc:#FFF7E2; --calcline:#ecd9a8; --line:#dcdcdc; --band:#26211f; --off:#f3f3f3;
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+  .schx .page{ width:11in; height:8.5in; background:#fff; overflow:hidden; display:flex; flex-direction:column; box-sizing:border-box; }
+  .schx .page *{ box-sizing:border-box; }
+  .schx .head{ background:var(--red); padding:16px 26px; display:flex; align-items:center; justify-content:space-between; }
+  .schx .brand{ display:flex; align-items:center; gap:13px; }
+  .schx .logo{ width:46px; height:46px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .schx .brand .name{ color:#fff; font-size:23px; font-weight:800; line-height:1.05; }
+  .schx .brand .sub{ color:var(--gold); font-size:12.5px; font-weight:700; letter-spacing:.6px; }
+  .schx .head .meta{ text-align:right; color:#fff; }
+  .schx .head .meta .d{ font-size:17px; font-weight:700; }
+  .schx .head .meta .by{ font-size:12px; color:#f6d9a0; }
+  .schx .strip{ background:var(--cream); padding:9px 26px; display:flex; justify-content:space-between; align-items:center; color:#6b5a2e; border-bottom:1px solid rgba(0,0,0,.06); }
+  .schx .kpis{ display:flex; gap:30px; }
+  .schx .kpi b{ display:block; font-size:19px; font-weight:800; color:var(--red-dk); line-height:1.1; }
+  .schx .kpi span{ font-size:10px; letter-spacing:.5px; text-transform:uppercase; color:#9a8854; }
+  .schx .strip .close{ font-size:12px; font-weight:600; text-align:right; }
+  .schx .body{ padding:0 26px; flex:1; display:flex; }
+  .schx table{ width:100%; height:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+  .schx col.nm{ width:1.35in; } .schx col.tot{ width:0.7in; }
+  .schx thead th{ background:var(--band); color:#fff; font-weight:700; padding:7px 2px; text-align:center; font-size:12px; }
+  .schx thead th.nm{ text-align:left; padding-left:12px; }
+  .schx thead th .dn{ display:block; color:var(--gold); font-weight:800; font-size:14px; margin-top:1px; }
+  .schx tbody td{ text-align:center; padding:3px 2px; border-bottom:1px solid var(--line); border-left:1px solid var(--line); font-variant-numeric:tabular-nums; color:#111; line-height:1.05; }
+  .schx tbody td.nm{ text-align:left; padding-left:12px; font-weight:600; color:#33302e; }
+  .schx .mtag{ color:var(--red); font-weight:800; font-size:10px; }
+  .schx .sh{ font-weight:700; font-size:12.5px; }
+  .schx .hr{ display:block; font-size:9.5px; color:#9a8c63; font-weight:700; margin-top:1px; }
+  .schx td.off{ background:var(--off); color:#b7b7b7; font-weight:700; }
+  .schx tr.band td{ background:var(--band); color:var(--gold); text-align:left; font-weight:800; font-size:11px; letter-spacing:.5px; text-transform:uppercase; padding:4px 12px; border-left:none; }
+  .schx tr.person td.ptot{ background:var(--cream); color:var(--red-dk); font-weight:800; }
+  .schx tr.rowlbl td.nm{ font-weight:600; color:#33302e; font-size:12px; }
+  .schx tr.note td{ color:#444; font-size:11.5px; }
+  .schx tr.note td.empty{ color:#cfcfcf; }
+  .schx tr.calc td{ background:var(--calc); font-weight:700; border-bottom:1px solid var(--calcline); }
+  .schx tr.calc td.nm{ color:var(--red-dk); font-weight:800; }
+  .schx tr.calc td.ptot{ background:#f6ecd0; }
+  .schx .foot{ background:#1a1a1a; color:#cfcfcf; font-size:11.5px; padding:9px 26px; display:flex; justify-content:space-between; align-items:center; }
+  .schx .legend{ display:flex; gap:14px; flex-wrap:wrap; }
+  .schx .legend i{ font-style:normal; }
+  .schx .legend b{ color:var(--gold); }
+  /* shareable — portrait overrides */
+  .schx.portrait .page{ width:8.5in; height:11in; }
+  .schx.portrait .head{ padding:16px 22px; }
+  .schx.portrait .logo{ width:44px; height:44px; font-size:25px; }
+  .schx.portrait .brand .name{ font-size:21px; }
+  .schx.portrait .brand .sub{ font-size:11.5px; letter-spacing:.5px; }
+  .schx.portrait .head .meta .d{ font-size:16px; }
+  .schx.portrait .head .meta .by{ font-size:11.5px; }
+  .schx.portrait .strip{ padding:8px 22px; }
+  .schx.portrait .kpis{ gap:22px; }
+  .schx.portrait .kpi b{ font-size:17px; }
+  .schx.portrait .kpi span{ font-size:9px; letter-spacing:.4px; }
+  .schx.portrait .strip .close{ font-size:10.5px; }
+  .schx.portrait .body{ padding:0 18px; }
+  .schx.portrait table{ font-size:11px; }
+  .schx.portrait col.nm{ width:1.0in; } .schx.portrait col.tot{ width:0.5in; }
+  .schx.portrait thead th{ padding:6px 1px; font-size:10.5px; }
+  .schx.portrait thead th.nm{ padding-left:9px; }
+  .schx.portrait thead th .dn{ font-size:12px; }
+  .schx.portrait tbody td{ padding:2px 1px; line-height:1.02; }
+  .schx.portrait tbody td.nm{ padding-left:9px; }
+  .schx.portrait .mtag{ font-size:9px; }
+  .schx.portrait .sh{ font-size:10.5px; }
+  .schx.portrait .hr{ font-size:8.5px; }
+  .schx.portrait tr.band td{ font-size:10px; letter-spacing:.4px; padding:3px 9px; }
+  .schx.portrait tr.rowlbl td.nm{ font-size:10.5px; }
+  .schx.portrait tr.note td{ font-size:9.5px; }
+  .schx.portrait .foot{ font-size:10px; padding:8px 18px; }
+  .schx.portrait .legend{ gap:10px; }
+
+  .schp{ font-family:"Helvetica Neue",Arial,sans-serif; color:#000; }
+  .schp .page{ width:11in; height:8.5in; background:#fff; padding:0.4in 0.45in; display:flex; flex-direction:column; box-sizing:border-box; }
+  .schp .page *{ box-sizing:border-box; }
+  .schp .hd{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2.5px solid #000; padding-bottom:8px; }
+  .schp .hd .t{ font-size:23px; font-weight:800; letter-spacing:.5px; }
+  .schp .hd .t small{ display:block; font-size:11px; font-weight:600; letter-spacing:1.5px; color:#444; margin-top:3px; }
+  .schp .hd .m{ text-align:right; font-size:13px; }
+  .schp .hd .m b{ font-size:15px; }
+  .schp table{ width:100%; flex:1; border-collapse:collapse; font-size:12px; margin-top:12px; table-layout:fixed; }
+  .schp col.nm{ width:1.3in; } .schp col.tot{ width:0.65in; }
+  .schp th,.schp td{ border:1px solid #000; padding:2px 3px; text-align:center; font-variant-numeric:tabular-nums; line-height:1.05; }
+  .schp thead th{ font-size:12px; font-weight:700; padding:6px 3px; }
+  .schp thead th .dn{ display:block; font-size:13px; font-weight:800; }
+  .schp thead th.nm,.schp td.nm{ text-align:left; padding-left:7px; }
+  .schp td.nm{ font-weight:600; }
+  .schp .sh{ font-weight:700; }
+  .schp .hr{ display:block; font-size:9px; color:#555; font-weight:600; margin-top:1px; }
+  .schp td.off{ color:#999; font-weight:700; }
+  .schp .mtag{ font-size:10px; font-weight:800; }
+  .schp tr.band td{ background:#000; color:#fff; text-align:left; font-weight:800; font-size:11px; letter-spacing:.5px; text-transform:uppercase; padding:3px 7px; }
+  .schp td.ptot{ background:#e8e8e8; font-weight:800; }
+  .schp tr.calc th,.schp tr.calc td{ background:#e8e8e8; font-weight:800; }
+  .schp tr.note td{ font-size:10.5px; }
+  .schp tr.note td.empty{ color:#bbb; }
+  .schp .ft{ margin-top:9px; padding-top:8px; font-size:10.5px; color:#222; display:flex; gap:18px; flex-wrap:wrap; border-top:1.5px solid #000; }
+  .schp .ft b{ color:#000; }
+  /* printable — portrait overrides */
+  .schp.portrait .page{ width:8.5in; height:11in; padding:0.45in 0.4in; }
+  .schp.portrait .hd{ padding-bottom:7px; }
+  .schp.portrait .hd .t{ font-size:20px; }
+  .schp.portrait .hd .t small{ font-size:10px; letter-spacing:1.4px; }
+  .schp.portrait .hd .m{ font-size:11.5px; }
+  .schp.portrait .hd .m b{ font-size:13.5px; }
+  .schp.portrait table{ font-size:10px; margin-top:10px; }
+  .schp.portrait col.nm{ width:0.95in; } .schp.portrait col.tot{ width:0.45in; }
+  .schp.portrait th,.schp.portrait td{ padding:1px 2px; line-height:1.02; }
+  .schp.portrait thead th{ font-size:10px; padding:5px 2px; }
+  .schp.portrait thead th .dn{ font-size:11px; }
+  .schp.portrait thead th.nm,.schp.portrait td.nm{ padding-left:5px; }
+  .schp.portrait .sh{ font-size:10px; }
+  .schp.portrait .hr{ font-size:8px; }
+  .schp.portrait .mtag{ font-size:8.5px; }
+  .schp.portrait tr.band td{ font-size:9.5px; letter-spacing:.4px; padding:2px 5px; }
+  .schp.portrait tr.note td{ font-size:9px; }
+  .schp.portrait .ft{ margin-top:8px; padding-top:7px; font-size:9px; gap:12px; }
 </style>
 </head>
 <body>
@@ -663,6 +808,8 @@ let appView="home";
 let activeTool=null;
 
 function renderApp(){
+  // Drop the schedule-grid desktop width override whenever we're not in the Schedule tool.
+  if(!(appView==="tool" && activeTool==="scheduleMaker")) document.body.classList.remove("sched-grid");
   if(appView==="tool" && activeTool && toolById(activeTool) && toolById(activeTool).status==="active"){
     TOOL_VIEWS[activeTool]();          // tool draws its own bar/view/footer
   } else if(appView==="globalSettings"){
@@ -2184,7 +2331,8 @@ const Sched = (function(){
   }
   function blank(){
     const m=mondayOfToday();
-    const s={ weeks:{}, currentWeek:m, closeTimes:{ sunThu:"22:30", friSat:"00:30" } };
+    const s={ weeks:{}, currentWeek:m, closeTimes:{ sunThu:"22:30", friSat:"00:30" },
+              storeNumber:"84", builtBy:"" };
     s.weeks[m]=blankWeek(m);
     return s;
   }
@@ -2192,6 +2340,8 @@ const Sched = (function(){
     let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
     if(!s || typeof s!=="object" || !s.weeks || typeof s.weeks!=="object") return blank();
     if(!s.closeTimes) s.closeTimes={ sunThu:"22:30", friSat:"00:30" };
+    if(typeof s.storeNumber!=="string") s.storeNumber="84";
+    if(typeof s.builtBy!=="string") s.builtBy="";
     for(const k in s.weeks){ s.weeks[k].startDate=k; normalizeWeek(s.weeks[k]); }
     if(!s.currentWeek || !s.weeks[s.currentWeek]){
       const keys=Object.keys(s.weeks).sort();
@@ -2218,6 +2368,8 @@ const Sched = (function(){
   function reset(){ route={name:"grid"}; }
   function reload(){ state=load(); route={name:"grid"}; }
   function render(){
+    // Only the full-week grid lifts the phone-width cap on desktop (see body.sched-grid CSS).
+    document.body.classList.toggle("sched-grid", route.name==="grid" || !route.name);
     if(route.name==="people") renderPeople();
     else if(route.name==="weeks") renderWeeks();
     else if(route.name==="settings") renderSettings();
@@ -2231,6 +2383,7 @@ const Sched = (function(){
       <h1>Schedule <span class="sub">${esc(weekLabel(state.currentWeek))}</span></h1>
       <button class="iconbtn" id="schWeeks" aria-label="Weeks">📅</button>
       <button class="iconbtn" id="schPeople" aria-label="People">👤</button>
+      <button class="iconbtn" id="schExport" aria-label="Export">📤</button>
       <button class="iconbtn" id="schSettings" aria-label="Close times">⚙︎</button>`;
     elView.className="nofooter";
 
@@ -2323,6 +2476,7 @@ const Sched = (function(){
     document.getElementById("schHome").onclick=openHome;
     document.getElementById("schWeeks").onclick=()=>go("weeks");
     document.getElementById("schPeople").onclick=()=>go("people");
+    document.getElementById("schExport").onclick=()=>openExportChooser();
     document.getElementById("schSettings").onclick=()=>go("settings");
     elView.querySelectorAll("td.cell").forEach(td=>{
       td.onclick=()=>openCellEditor(td.getAttribute("data-pid"), Number(td.getAttribute("data-d")));
@@ -2592,21 +2746,291 @@ const Sched = (function(){
       <h1>Close Times</h1>`;
     elView.className="";
     const ct=state.closeTimes;
+    const lblStyle="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;";
     elView.innerHTML=`
       <div class="setcard">
         <h3>Store close times</h3>
         <p>Drives <b>CL</b> in shift math. Use 24-hour time. Fri/Sat after midnight (e.g. 00:30).</p>
-        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">Sun–Thu close</label>
+        <label style="${lblStyle}">Sun–Thu close</label>
         <input class="txt" type="time" id="ctSunThu" value="${esc(ct.sunThu||'22:30')}">
         <div style="height:10px;"></div>
-        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">Fri–Sat close</label>
+        <label style="${lblStyle}">Fri–Sat close</label>
         <input class="txt" type="time" id="ctFriSat" value="${esc(ct.friSat||'00:30')}">
       </div>
-      <div class="sched-legend" style="margin-top:6px;">Changing these re-derives all auto hours on the grid.</div>`;
+      <div class="setcard">
+        <h3>Export header</h3>
+        <p>Shown on the shared / printed schedule.</p>
+        <label style="${lblStyle}">Store #</label>
+        <input class="txt" id="schStoreNum" inputmode="text" autocomplete="off" placeholder="84" value="${esc(state.storeNumber||'')}">
+        <div style="height:10px;"></div>
+        <label style="${lblStyle}">Built by</label>
+        <input class="txt" id="schBuiltBy" inputmode="text" autocomplete="off" placeholder="e.g. Charlie" value="${esc(state.builtBy||'')}">
+      </div>
+      <div class="sched-legend" style="margin-top:6px;">Changing close times re-derives all auto hours on the grid.</div>`;
     elFooter.innerHTML="";
     document.getElementById("schBack").onclick=()=>go("grid");
     document.getElementById("ctSunThu").onchange=e=>{ state.closeTimes.sunThu=e.target.value||"22:30"; save(); };
     document.getElementById("ctFriSat").onchange=e=>{ state.closeTimes.friSat=e.target.value||"00:30"; save(); };
+    document.getElementById("schStoreNum").oninput=e=>{ state.storeNumber=e.target.value; save(); };
+    document.getElementById("schBuiltBy").oninput=e=>{ state.builtBy=e.target.value; save(); };
+  }
+
+  /* ---------------- export (chooser → shareable image / printable, both orientations) ----------------
+     Ported from the locked mockups (export-mockup-schedule-{shareable,printable}-{landscape,portrait}.html),
+     bound to live week data. Shareable: html2canvas → navigator.share (preview fallback).
+     Printable: window.print() via the shared #hhPrintHost; @page orientation injected per export. */
+  function expName(ext){ return "schedule-"+state.currentWeek+"."+ext; }
+  function weekRangeLabel(startISO){
+    const a=dayDate(startISO,0), b=dayDate(startISO,6);
+    return `${a.getMonth()+1}/${a.getDate()} – ${b.getMonth()+1}/${b.getDate()}`;
+  }
+  function hm12(t){                              // "22:30"→"10:30p", "00:30"→"12:30a", "9:00"→"9a"
+    const m=String(t||"").match(/^(\d{1,2}):?(\d{2})?$/); if(!m) return esc(String(t||""));
+    let h=Number(m[1]); const min=m[2]?Number(m[2]):0;
+    const ap=h>=12?"p":"a"; let h12=h%12; if(h12===0) h12=12;
+    return h12 + (min? ":"+String(min).padStart(2,"0") : "") + ap;
+  }
+  function closeLine(){
+    const ct=state.closeTimes||{};
+    return `Close · Sun–Thu ${hm12(ct.sunThu||"22:30")} · Fri–Sat ${hm12(ct.friSat||"00:30")}`;
+  }
+  function comma(n){ return (Math.round(Number(n)||0)).toLocaleString("en-US"); }
+  function expStamp(){
+    const d=new Date(); let h=d.getHours(); const ap=h>=12?"PM":"AM"; h=h%12; if(h===0) h=12;
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${h}:${String(d.getMinutes()).padStart(2,"0")} ${ap}`;
+  }
+  function expHeadHTML(){
+    let h=`<th class="nm">Name</th>`;
+    for(let d=0; d<7; d++){ const dn=dayDate(state.currentWeek,d).getDate(); h+=`<th>${DAYS[d]}<span class="dn">${dn}</span></th>`; }
+    return h+`<th>Total</th>`;
+  }
+  function expCellHTML(p, d){
+    const sh=p.shifts[d]; const raw=sh?(sh.raw||""):"";
+    if(isOff(raw)){ const tok=raw.trim()===""?"·":esc(raw.trim()); return `<td class="off">${tok}</td>`; }
+    const hrs=cellHours(p,d);
+    return `<td><span class="sh">${esc(raw)}</span><span class="hr">${hrs>0?fmt(hrs):""}</span></td>`;
+  }
+  function expProjRow(label, arr, share){
+    let row=`<td class="nm">${esc(label)}</td>`;
+    for(let d=0; d<7; d++){ const v=arr[d]; row+=`<td>${v==null?"":comma(v)}</td>`; }
+    const tot=sumArr(arr);
+    row+=`<td class="ptot">${tot==null?"":"$"+comma(tot)}</td>`;
+    return `<tr${share?' class="rowlbl"':''}>${row}</tr>`;
+  }
+  function expBody(share){
+    const w=week(); let body="";
+    for(const sec of SECTIONS){
+      body+=`<tr class="band"><td colspan="9">${esc(sec.label)}</td></tr>`;
+      for(const p of w.people.filter(x=>x.section===sec.key)){
+        let r=`<td class="nm">${esc(p.name||"—")}${p.minor?' <span class="mtag">(M)</span>':''}</td>`;
+        for(let d=0; d<7; d++) r+=expCellHTML(p,d);
+        r+=`<td class="ptot">${fmt(personTotal(p))}</td>`;
+        body+=`<tr${share?' class="person"':''}>${r}</tr>`;
+      }
+    }
+    // Important
+    body+=`<tr class="band"><td colspan="9">Important</td></tr>`;
+    for(const r of IMPORTANT_ROWS){
+      let row=`<td class="nm">${esc(r.label)}</td>`;
+      for(let d=0; d<7; d++){
+        const v=((w.important[r.key]||[])[d]||"").trim();
+        row+= v==="" ? `<td class="empty">·</td>` : `<td>${esc(v)}</td>`;
+      }
+      body+=`<tr class="note${share?' rowlbl':''}">${row}<td></td></tr>`;
+    }
+    // Projections (omit the on-screen "(-trn)" rows)
+    const pj=w.projections;
+    body+=`<tr class="band"><td colspan="9">Projections</td></tr>`;
+    body+=expProjRow("Last Yr $", pj.lastYearSales, share);
+    body+=expProjRow("Proj $",    pj.projSales,     share);
+    let ph=`<td class="nm">Proj Hrs</td>`, phTot=0;
+    for(let d=0; d<7; d++){ const h=dayScheduledHours(d); phTot+=h; ph+=`<td>${h>0?fmt(h):""}</td>`; }
+    body+=`<tr class="calc">${ph}<td class="ptot">${fmt(phTot)}</td></tr>`;
+    let pm=`<td class="nm">$PMH</td>`;
+    for(let d=0; d<7; d++) pm+=`<td>${pmhCell(d)}</td>`;
+    body+=`<tr class="calc">${pm}<td class="ptot">${pmhTotalCell()}</td></tr>`;
+    return body;
+  }
+  function totalSchedHours(){ let t=0; for(let d=0; d<7; d++) t+=dayScheduledHours(d); return t; }
+  function shareableHTML(){
+    const w=week(); const sn=esc(state.storeNumber||""); const by=(state.builtBy||"").trim();
+    const projTot=sumArr(w.projections.projSales), pmh=pmhTotalCell();
+    const meta=`${by?("Built by "+esc(by)+" · "):""}${w.people.length} staff`;
+    return `<div class="page">
+      <div class="head">
+        <div class="brand"><div class="logo">🍕</div><div>
+          <div class="name">Hungry Howie's</div><div class="sub">WEEKLY SCHEDULE${sn?" · STORE "+sn:""}</div>
+        </div></div>
+        <div class="meta"><div class="d">Week of ${esc(weekRangeLabel(state.currentWeek))}</div><div class="by">${meta}</div></div>
+      </div>
+      <div class="strip">
+        <div class="kpis">
+          <div class="kpi"><b>${fmt(totalSchedHours())}</b><span>Scheduled hours</span></div>
+          <div class="kpi"><b>${projTot==null?"—":"$"+comma(projTot)}</b><span>Projected sales</span></div>
+          <div class="kpi"><b>${pmh?("$"+pmh):"—"}</b><span>Sales / man-hour</span></div>
+        </div>
+        <span class="close">${closeLine()}</span>
+      </div>
+      <div class="body">
+        <table>
+          <colgroup><col class="nm"><col><col><col><col><col><col><col><col class="tot"></colgroup>
+          <thead><tr>${expHeadHTML()}</tr></thead>
+          <tbody>${expBody(true)}</tbody>
+        </table>
+      </div>
+      <div class="foot">
+        <div class="legend">
+          <i><b>X</b> Off</i><i><b>R</b> Req off</i><i><b>(M)</b> Minor</i><i><b>(8)</b> 30-min break</i>
+          <i><b>(D)</b> Delivery</i><i><b>(I)</b> Insider</i><i><b>/T</b> Training</i><i><b>CL</b> Close</i>
+        </div>
+        <span>Generated by Howie Helper · ${esc(expStamp())}</span>
+      </div>
+    </div>`;
+  }
+  function printableHTML(){
+    const sn=esc(state.storeNumber||""); const by=(state.builtBy||"").trim(); const ct=state.closeTimes||{};
+    const m=`<b>Week of ${esc(weekRangeLabel(state.currentWeek))}</b><br>${by?("Built by "+esc(by)+" · "):""}Close Sun–Thu ${hm12(ct.sunThu||"22:30")} / Fri–Sat ${hm12(ct.friSat||"00:30")}`;
+    return `<div class="page">
+      <div class="hd">
+        <div class="t">WEEKLY SCHEDULE<small>HOWIE HELPER${sn?" · STORE "+sn:""}</small></div>
+        <div class="m">${m}</div>
+      </div>
+      <table>
+        <colgroup><col class="nm"><col><col><col><col><col><col><col><col class="tot"></colgroup>
+        <thead><tr>${expHeadHTML()}</tr></thead>
+        <tbody>${expBody(false)}</tbody>
+      </table>
+      <div class="ft">
+        <span><b>X</b> Off</span><span><b>R</b> Request off</span><span><b>(M)</b> Minor</span>
+        <span><b>(8)</b> 30-min break</span><span><b>(D)</b> Delivery</span><span><b>(I)</b> Insider</span>
+        <span><b>/T</b> Training</span><span><b>CL</b> Close</span>
+        <span><b>$PMH</b> = Proj $ ÷ Scheduled hours</span>
+      </div>
+    </div>`;
+  }
+  function buildExportHTML(variant){ return variant==="share" ? shareableHTML() : printableHTML(); }
+
+  async function downloadOrShare(blob, ext){
+    if(!blob){ toast("Could not create file"); return; }
+    const name=expName(ext), type=blob.type||(ext==="pdf"?"application/pdf":"image/png");
+    try{
+      const file=new File([blob],name,{type});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"Weekly Schedule"}); return;
+      }
+    }catch(e){ /* fall through to download */ }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast(ext.toUpperCase()+" saved");
+  }
+  function savePdf(canvas, orientation){
+    try{
+      const { jsPDF }=window.jspdf;
+      const orient=orientation==="portrait"?"portrait":"landscape";
+      const pdf=new jsPDF({unit:"pt",format:"letter",orientation:orient});
+      const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+      let iw=pw, ih=pw*canvas.height/canvas.width;
+      if(ih>ph){ ih=ph; iw=ph*canvas.width/canvas.height; }
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pw-iw)/2,(ph-ih)/2,iw,ih);
+      downloadOrShare(pdf.output("blob"),"pdf");
+    }catch(e){ toast("Could not create PDF"); }
+  }
+  function openExportPreview(canvas, orientation){
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="schxOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Weekly Schedule — Export</div></div>
+          <div class="hhx-preview"><img src="${canvas.toDataURL("image/png")}" alt="Export preview"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn good" id="schxPng">Save PNG</button>
+            <button class="btn ghost" id="schxPdf">Save PDF</button>
+          </div>
+          <div class="btn-row" style="margin-top:10px">
+            <button class="btn ghost" id="schxPrint">Print sheet</button>
+            <button class="btn ghost" id="schxClose">Close</button>
+          </div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("schxOv").onclick=e=>{ if(e.target.id==="schxOv") close(); };
+    document.getElementById("schxClose").onclick=close;
+    document.getElementById("schxPng").onclick=()=>canvas.toBlob(b=>downloadOrShare(b,"png"),"image/png");
+    document.getElementById("schxPdf").onclick=()=>savePdf(canvas, orientation);
+    document.getElementById("schxPrint").onclick=()=>{ close(); printSchedule(orientation); };
+  }
+  async function shareSchedule(orientation){
+    overlayRoot.innerHTML="";                    // close chooser
+    const host=document.createElement("div");
+    host.className="schx"+(orientation==="portrait"?" portrait":"");
+    host.style.cssText="position:absolute;left:-10000px;top:0;";
+    host.innerHTML=buildExportHTML("share");
+    document.body.appendChild(host);
+    let canvas;
+    try{
+      canvas=await html2canvas(host.querySelector(".page"),
+        {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+    }catch(e){ host.remove(); toast("Could not create image"); return; }
+    host.remove();
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    if(blob){
+      try{
+        const file=new File([blob],expName("png"),{type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:"Weekly Schedule"}); return;
+        }
+      }catch(e){ /* cancelled/unsupported → saveable preview */ }
+    }
+    openExportPreview(canvas, orientation);
+  }
+  function printSchedule(orientation){
+    overlayRoot.innerHTML="";                    // close chooser
+    const orient=orientation==="portrait"?"portrait":"landscape";
+    const host=document.createElement("div");
+    host.id="hhPrintHost"; host.className="schp"+(orient==="portrait"?" portrait":"");
+    host.innerHTML=buildExportHTML("print");
+    document.body.appendChild(host);
+    // The shared @media print block hard-codes @page; inject the chosen orientation.
+    const pageStyle=document.createElement("style"); pageStyle.id="schPageStyle";
+    pageStyle.textContent=`@media print{ @page{ size:letter ${orient}; margin:0.4in; } }`;
+    document.head.appendChild(pageStyle);
+    document.body.classList.add("hh-printing");
+    let cleaned=false;
+    const cleanup=()=>{ if(cleaned) return; cleaned=true;
+      host.remove(); pageStyle.remove(); document.body.classList.remove("hh-printing");
+      window.removeEventListener("afterprint",cleanup); };
+    window.addEventListener("afterprint",cleanup);
+    setTimeout(()=>{ try{ window.print(); }catch(e){} }, 60);
+    setTimeout(cleanup, 60000);
+  }
+  function openExportChooser(){
+    let orient="landscape";
+    function paint(){
+      overlayRoot.innerHTML=`
+        <div class="overlay" id="schExpOv">
+          <div class="pad">
+            <div class="padhead"><div class="l">Export · Week of ${esc(weekRangeLabel(state.currentWeek))}</div></div>
+            <p style="color:var(--muted);font-size:13px;margin:0 0 12px;">Share a branded image to the group chat, or print / save a PDF.</p>
+            <div class="schseg">
+              <button data-or="landscape" class="${orient==='landscape'?'on':''}">Landscape</button>
+              <button data-or="portrait" class="${orient==='portrait'?'on':''}">Portrait</button>
+            </div>
+            <div class="btn-row" style="margin-top:12px"><button class="btn good" id="schShareBtn">📷&nbsp; Shareable image</button></div>
+            <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="schPrintBtn">🖨&nbsp; Printable / PDF</button></div>
+            <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="schExpClose">Cancel</button></div>
+          </div>
+        </div>`;
+      const close=()=>{ overlayRoot.innerHTML=""; };
+      document.getElementById("schExpOv").onclick=e=>{ if(e.target.id==="schExpOv") close(); };
+      document.getElementById("schExpClose").onclick=close;
+      overlayRoot.querySelectorAll(".schseg button").forEach(b=>{
+        b.onclick=()=>{ orient=b.getAttribute("data-or"); paint(); };
+      });
+      document.getElementById("schShareBtn").onclick=()=>shareSchedule(orient);
+      document.getElementById("schPrintBtn").onclick=()=>printSchedule(orient);
+    }
+    paint();
   }
 
   try{ _selftest(); }catch(e){}

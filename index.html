@@ -376,6 +376,71 @@
     body.hh-printing #hhPrintHost .list,body.hh-printing #hhPrintHost .sec-h,
     body.hh-printing #hhPrintHost .row{page-break-inside:avoid;}
   }
+
+  /* ---------- Schedule Maker ---------- */
+  .sched-scroll{overflow:auto;-webkit-overflow-scrolling:touch;
+    height:calc(100vh - 58px - var(--safe-t) - var(--safe-b));margin:0 -14px;}
+  table.sched{border-collapse:separate;border-spacing:0;font-size:12.5px;
+    font-variant-numeric:tabular-nums;}
+  .sched th,.sched td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:6px 7px;white-space:nowrap;background:var(--panel);height:34px;}
+  .sched thead th{position:sticky;top:0;z-index:3;background:var(--panel2);
+    font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-size:10.5px;}
+  .sched .nmcol{position:sticky;left:0;z-index:2;text-align:left;min-width:104px;max-width:104px;
+    box-shadow:1px 0 0 var(--line);}
+  .sched thead .nmcol{z-index:4;text-align:left;}
+  .sched .day{min-width:54px;text-align:center;}
+  .sched .day .dn{display:block;color:var(--accent2);font-size:11px;font-weight:700;margin-top:1px;}
+  .sched .hr{min-width:30px;text-align:center;color:var(--muted);font-size:11px;}
+  .sched .totcol{min-width:50px;text-align:center;font-weight:700;color:var(--ink);}
+  .sched .band td{background:var(--panel2);color:var(--accent2);text-transform:uppercase;
+    letter-spacing:.5px;font-size:10.5px;font-weight:700;}
+  .sched .band td.nmcol{background:var(--panel2);}
+  .sched .pname{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;display:block;max-width:100px;}
+  .sched .pname .mtag{color:var(--accent2);font-size:10px;font-weight:700;}
+  .sched .chips{display:block;margin-top:1px;}
+  .sched .chip{display:inline-block;font-size:9px;font-weight:700;color:var(--muted);
+    background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:0 3px;margin-right:2px;}
+  .sched td.cell{text-align:center;color:var(--ink);}
+  .sched td.cell:active{background:var(--panel2);}
+  .sched td.cell.empty{color:var(--line);}
+  .sched td.cell.ov{font-style:italic;color:var(--accent2);}
+  .sched td.note{text-align:center;color:var(--ink);font-size:11px;}
+  .sched td.note:active{background:var(--panel2);}
+  .sched td.note.empty{color:var(--line);}
+  .sched td.ptot{font-weight:700;}
+  .sched .proj-in{width:48px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--ink);border-radius:6px;padding:4px;text-align:center;font-size:12px;
+    font-variant-numeric:tabular-nums;}
+  .sched td.rowlbl{position:sticky;left:0;z-index:2;text-align:left;background:var(--panel);
+    box-shadow:1px 0 0 var(--line);color:var(--muted);font-size:11px;font-weight:600;}
+  .sched td.calc{text-align:center;color:var(--muted);}
+  .sched-empty{color:var(--muted);text-align:center;padding:40px 14px;font-size:14px;}
+  .sched-legend{margin:14px 2px;color:var(--muted);font-size:12px;}
+  .sched-legend summary{color:var(--accent2);font-weight:700;cursor:pointer;font-size:13px;
+    text-transform:uppercase;letter-spacing:.5px;}
+  .sched-legend table{margin-top:8px;border-collapse:collapse;width:100%;}
+  .sched-legend td{padding:3px 6px;font-size:12px;}
+  .sched-legend td b{color:var(--ink);}
+  /* cell editor sheet */
+  .pad .schfield{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:12px;font-size:20px;text-align:center;font-weight:600;margin-bottom:10px;}
+  .pad .schquick{display:flex;gap:8px;margin-bottom:10px;}
+  .pad .schquick button{flex:1;padding:11px;border-radius:10px;background:var(--panel2);
+    border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:15px;}
+  .pad .schquick button:active{background:var(--tap);}
+  .pad .schtags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .pad .schtags button{flex:1 1 18%;padding:9px 4px;border-radius:9px;background:var(--panel2);
+    border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:12px;}
+  .pad .schtags button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .pad .schhrs{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .pad .schhrs .lbl{color:var(--muted);font-size:13px;flex:1;}
+  .pad .schhrs .auto{font-size:12px;}
+  .pad .schhrs input{width:74px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px;font-size:17px;text-align:center;font-variant-numeric:tabular-nums;}
+  .pad .schhrs .ovbtn{padding:9px 12px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--accent2);font-weight:700;font-size:12px;}
+  .pad .schhrs .ovbtn.on{background:var(--accent2);border-color:var(--accent2);color:#06210f;}
 </style>
 </head>
 <body>
@@ -442,7 +507,7 @@ const TOOLS = [
   { id:"sheetOut",         name:"Sheet-out Projector",    icon:"📐", status:"soon",   descriptor:"Project skins/dough to sheet out" },
   { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
   { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
-  { id:"scheduleGen",      name:"Schedule Generator",     icon:"🗓️", status:"soon",  descriptor:"Build the staff schedule" },
+  { id:"scheduleMaker",    name:"Schedule",               icon:"🗓️", status:"active", descriptor:"Build & edit the weekly staff schedule" },
 ];
 function toolById(id){ return TOOLS.find(t=>t.id===id) || null; }
 
@@ -481,6 +546,7 @@ function openTool(id){
   shell.lastTool=id; saveShell();      // persist last-used for jump-to-last-used
   if(id==="nightlyInventory") Inv.reset();
   if(id==="drawerCash") DrawerCash.reset();
+  if(id==="scheduleMaker") Sched.reset();
   renderApp(); window.scrollTo(0,0);
 }
 
@@ -560,8 +626,8 @@ function renderGlobalSettings(){
   });
   document.getElementById("resetApp").onclick=()=>{
     if(confirm("Reset the whole app? This erases ALL data on this device for every tool, including inventory counts. This cannot be undone.")){
-      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); }catch(e){}
-      shell=loadShell(); Inv.reload(); DrawerCash.reload();
+      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); localStorage.removeItem(Sched.STORE); }catch(e){}
+      shell=loadShell(); Inv.reload(); DrawerCash.reload(); Sched.reload();
       toast("App reset"); openHome();
     }
   };
@@ -1852,9 +1918,569 @@ const DrawerCash = (function(){
   return { STORE, render, reset, reload };
 })();
 
+/* ====================================================================
+   SCHEDULE MAKER — manual weekly schedule creator/editor
+   ==================================================================== */
+const Sched = (function(){
+  const STORE = "howiehelper.scheduleMaker.v1";
+  const overlayRoot = document.getElementById("overlayRoot");
+  const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];   // index 0..6
+  const SECTIONS = [
+    {key:"manager", label:"Managers"},
+    {key:"insider", label:"Insiders"},
+    {key:"driver",  label:"Drivers"},
+  ];
+  const IMPORTANT_ROWS = [
+    {key:"truck",         label:"Truck"},
+    {key:"specialEvents", label:"Special Events"},
+    {key:"weather",       label:"Weather"},
+    {key:"training",      label:"Training"},
+  ];
+  const COLSPAN = 16;   // name + 7*(shift+hrs) + total
+
+  /* ---------------- date helpers (local TZ) ---------------- */
+  function isoOf(dt){
+    const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,"0"), d=String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
+  function parseISO(s){ return new Date(String(s)+"T00:00"); }
+  function mondayISO(dt){
+    const d=new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    const wd=d.getDay();                       // 0=Sun..6=Sat
+    d.setDate(d.getDate() + (wd===0 ? -6 : 1-wd));
+    return isoOf(d);
+  }
+  function mondayOfToday(){ return mondayISO(new Date()); }
+  function dayDate(startISO, i){ const d=parseISO(startISO); d.setDate(d.getDate()+i); return d; }
+  const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function weekLabel(startISO){ const d=parseISO(startISO); return `Week of ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
+
+  /* ---------------- calc engine: shift text -> hours ---------------- */
+  function hm(s){ const p=String(s).split(":"); return (Number(p[0])||0)+(Number(p[1])||0)/60; }
+  function clOf(weekday, ct){                  // close time as continuous-timeline decimal
+    const friSat = (weekday===4 || weekday===5);   // Fri=4, Sat=5
+    let h = hm(friSat ? (ct.friSat||"00:30") : (ct.sunThu||"22:30"));
+    if(h < 9) h += 24;                          // 00:30 -> 24.5
+    return h;                                   // Sun-Thu 22.5, Fri-Sat 24.5
+  }
+  function parseTime(t){                        // "10"->10, "10:30"->10.5, "10:00 AM"->null
+    const m=String(t).trim().match(/^(\d{1,2})(?::(\d{2}))?$/);
+    return m ? Number(m[1]) + (m[2]?Number(m[2])/60:0) : null;
+  }
+  function stripTags(raw){
+    let s=String(raw);
+    const tags={delivery:false,insider:false,training:false,break30:false,town:false};
+    if(/town/i.test(s)){ tags.town=true; s=s.replace(/town/ig,""); }
+    if(/\(8\)/.test(s)){ tags.break30=true; s=s.replace(/\(8\)/g,""); }
+    if(/\(D\)/i.test(s)||/\/D/i.test(s)) tags.delivery=true; s=s.replace(/\(D\)/ig,"").replace(/\/D/ig,"");
+    if(/\(I\)/i.test(s)||/\/I/i.test(s)) tags.insider=true;  s=s.replace(/\(I\)/ig,"").replace(/\/I/ig,"");
+    if(/\/T/i.test(s)) tags.training=true;                   s=s.replace(/\/T/ig,"");
+    if(/T\s*$/.test(s)){ tags.training=true; s=s.replace(/T\s*$/,""); }   // trailing bare T
+    return { clean:s.trim(), tags };
+  }
+  function isOff(t){ t=t.trim(); return t==="" || /^(X|R|N\/A|FO|PO|PW|Assembly)$/i.test(t); }
+  function resolveStart(v, CL){ for(const c of [v, v+12]) if(c>=9 && c<=CL) return c; return null; }
+  function resolveEnd(tok, start, CL){
+    if(/^cl$/i.test(tok.trim())) return CL;
+    const v=parseTime(tok); if(v==null) return null;
+    const cand=[v, v+12]; if(v===12) cand.push(24);   // ascending; first >start & <=CL wins.
+    // (A hypothetical "10-11" on Fri resolves to 11:00, not 23:00 — real closing
+    //  shifts start PM so the start filter pushes the end past noon.)
+    for(const c of cand) if(c>start && c<=CL) return c;
+    return null;
+  }
+  function parseShiftHours(raw, weekday, closeTimes){
+    if(raw==null) return 0;
+    const {clean}=stripTags(String(raw));
+    if(isOff(clean)) return 0;                  // X/R/N-A/FO/PO/PW/Assembly/blank
+    const CL=clOf(weekday, closeTimes);
+    let sum=0;
+    for(let seg of clean.split(",")){           // split shifts sum
+      seg=seg.trim(); const dash=seg.indexOf("-");
+      if(dash<0) continue;                       // bare single time -> 0 (no end)
+      const a=parseTime(seg.slice(0,dash)); if(a==null) continue;
+      const st=resolveStart(a, CL); if(st==null) continue;
+      const en=resolveEnd(seg.slice(dash+1), st, CL); if(en==null) continue;
+      sum += en - st;
+    }
+    return Math.round(sum*4)/4;                  // quarter-hour rounding
+  }
+  function _selftest(){
+    const ct={sunThu:"22:30",friSat:"00:30"};
+    const cases=[
+      ["5-CL",3,5.5],["5-CL",4,7.5],["4-CL",4,8.5],["10:30-7",0,8.5],["10-8",0,10],
+      ["4-CL",1,6.5],["5-10",2,5],["6-11",5,5],["9:30-11:30",6,2],["5-12",4,7],
+      ["10:30-4:30, 7-CL",0,9.5],["4-cl(D)",3,6.5],["6-9/T",1,3],
+      ["X",0,0],["R",0,0],["",0,0],["N/A",0,0],["10:00 AM",0,0],
+    ];
+    let ok=true;
+    for(const [raw,wd,exp] of cases){
+      const got=parseShiftHours(raw,wd,ct);
+      if(got!==exp){ ok=false; console.error(`Sched parser FAIL: "${raw}" wd=${wd} -> ${got}, expected ${exp}`); }
+    }
+    if(ok) console.log("Sched parser self-test: 18/18 OK");
+    return ok;
+  }
+
+  /* ---------------- state / persistence ---------------- */
+  function emptyTags(){ return {delivery:false,insider:false,training:false,break30:false,town:false}; }
+  function blankWeek(startDate){
+    return { startDate,
+      people:[],
+      important:{ truck:Array(7).fill(""), specialEvents:Array(7).fill(""),
+                  weather:Array(7).fill(""), training:Array(7).fill("") },
+      projections:{ lastYearSales:Array(7).fill(null), projSales:Array(7).fill(null) } };
+  }
+  function normalizeWeek(w){
+    if(!w.important) w.important={};
+    IMPORTANT_ROWS.forEach(r=>{ if(!Array.isArray(w.important[r.key])) w.important[r.key]=Array(7).fill(""); });
+    if(!w.projections) w.projections={};
+    if(!Array.isArray(w.projections.lastYearSales)) w.projections.lastYearSales=Array(7).fill(null);
+    if(!Array.isArray(w.projections.projSales))     w.projections.projSales=Array(7).fill(null);
+    if(!Array.isArray(w.people)) w.people=[];
+    w.people.forEach(p=>{
+      if(!p.id) p.id=uid();
+      if(!p.section) p.section="insider";
+      if(typeof p.minor!=="boolean") p.minor=false;
+      if(!p.shifts||typeof p.shifts!=="object") p.shifts={};
+      for(const d in p.shifts){ const sh=p.shifts[d]; if(sh && !sh.tags) sh.tags=emptyTags(); }
+    });
+  }
+  function blank(){
+    const m=mondayOfToday();
+    const s={ weeks:{}, currentWeek:m, closeTimes:{ sunThu:"22:30", friSat:"00:30" } };
+    s.weeks[m]=blankWeek(m);
+    return s;
+  }
+  function load(){
+    let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
+    if(!s || typeof s!=="object" || !s.weeks || typeof s.weeks!=="object") return blank();
+    if(!s.closeTimes) s.closeTimes={ sunThu:"22:30", friSat:"00:30" };
+    for(const k in s.weeks){ s.weeks[k].startDate=k; normalizeWeek(s.weeks[k]); }
+    if(!s.currentWeek || !s.weeks[s.currentWeek]){
+      const keys=Object.keys(s.weeks).sort();
+      s.currentWeek = keys[0] || mondayOfToday();
+      if(!s.weeks[s.currentWeek]) s.weeks[s.currentWeek]=blankWeek(s.currentWeek);
+    }
+    return s;
+  }
+  let state=load();
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+  function week(){ return state.weeks[state.currentWeek]; }
+
+  /* ---------------- derived totals ---------------- */
+  function cellHours(p, d){
+    const sh=p.shifts[d]; if(!sh) return 0;
+    return sh.hoursOverridden ? (Number(sh.hours)||0) : parseShiftHours(sh.raw, d, state.closeTimes);
+  }
+  function personTotal(p){ let t=0; for(let d=0;d<7;d++) t+=cellHours(p,d); return t; }
+  function dayScheduledHours(d){ let t=0; for(const p of week().people) t+=cellHours(p,d); return t; }
+
+  /* ---------------- router ---------------- */
+  let route={ name:"grid" };
+  function go(name, arg){ route={name, arg}; render(); window.scrollTo(0,0); }
+  function reset(){ route={name:"grid"}; }
+  function reload(){ state=load(); route={name:"grid"}; }
+  function render(){
+    if(route.name==="people") renderPeople();
+    else if(route.name==="weeks") renderWeeks();
+    else if(route.name==="settings") renderSettings();
+    else renderGrid();
+  }
+
+  /* ---------------- GRID ---------------- */
+  function renderGrid(){
+    elBar.innerHTML=`
+      ${homeBtnHTML("schHome")}
+      <h1>Schedule <span class="sub">${esc(weekLabel(state.currentWeek))}</span></h1>
+      <button class="iconbtn" id="schWeeks" aria-label="Weeks">📅</button>
+      <button class="iconbtn" id="schPeople" aria-label="People">👤</button>
+      <button class="iconbtn" id="schSettings" aria-label="Close times">⚙︎</button>`;
+    elView.className="nofooter";
+
+    const w=week();
+    // header
+    let head=`<th class="nmcol">Name</th>`;
+    for(let d=0; d<7; d++){
+      const dn=dayDate(state.currentWeek, d).getDate();
+      head+=`<th class="day">${DAYS[d]}<span class="dn">${dn}</span></th><th class="hr">h</th>`;
+    }
+    head+=`<th class="totcol">Total</th>`;
+
+    // body
+    let body="";
+    for(const sec of SECTIONS){
+      body+=`<tr class="band"><td class="nmcol">${esc(sec.label)}</td><td colspan="${COLSPAN-1}"></td></tr>`;
+      const ppl=w.people.filter(p=>p.section===sec.key);
+      for(const p of ppl){
+        let row=`<td class="nmcol"><span class="pname">${esc(p.name||"—")}${p.minor?' <span class="mtag">(M)</span>':''}</span></td>`;
+        for(let d=0; d<7; d++){
+          const sh=p.shifts[d];
+          const raw=sh? (sh.raw||"") : "";
+          const ov=sh && sh.hoursOverridden;
+          const hrs=cellHours(p,d);
+          const cls="cell"+(raw.trim()===""?" empty":"")+(ov?" ov":"");
+          row+=`<td class="${cls}" data-pid="${esc(p.id)}" data-d="${d}">${esc(raw)||"·"}</td>`
+             + `<td class="hr">${hrs>0?fmt(hrs):""}</td>`;
+        }
+        row+=`<td class="ptot">${fmt(personTotal(p))}</td>`;
+        body+=`<tr>${row}</tr>`;
+      }
+    }
+
+    // important
+    body+=`<tr class="band"><td class="nmcol">Important</td><td colspan="${COLSPAN-1}"></td></tr>`;
+    for(const r of IMPORTANT_ROWS){
+      let row=`<td class="rowlbl">${esc(r.label)}</td>`;
+      for(let d=0; d<7; d++){
+        const v=(w.important[r.key]||[])[d]||"";
+        row+=`<td class="note${v.trim()===""?" empty":""}" data-note="${esc(r.key)}" data-d="${d}" colspan="2">${esc(v)||"·"}</td>`;
+      }
+      row+=`<td></td>`;
+      body+=`<tr>${row}</tr>`;
+    }
+
+    // projections
+    body+=`<tr class="band"><td class="nmcol">Projections</td><td colspan="${COLSPAN-1}"></td></tr>`;
+    const pj=w.projections;
+    // Last Year $ (manual)
+    body+=projInputRow("Last Yr $", "lastYearSales", pj.lastYearSales, "ly");
+    // Proj $ (manual)
+    body+=projInputRow("Proj $", "projSales", pj.projSales, "ps");
+    // Proj Hrs (computed)
+    let phRow=`<td class="rowlbl">Proj Hrs</td>`; let phTot=0;
+    for(let d=0; d<7; d++){ const h=dayScheduledHours(d); phTot+=h; phRow+=`<td class="calc" colspan="2" id="ph-d${d}">${h>0?fmt(h):""}</td>`; }
+    phRow+=`<td class="calc" id="ph-tot">${fmt(phTot)}</td>`;
+    body+=`<tr>${phRow}</tr>`;
+    // Hrs (-train) -> literal --
+    body+=dashRow("Hrs (-trn)");
+    // $PMH (computed)
+    let pmhRow=`<td class="rowlbl">$PMH</td>`;
+    for(let d=0; d<7; d++){ pmhRow+=`<td class="calc" colspan="2" id="pmh-d${d}">${pmhCell(d)}</td>`; }
+    pmhRow+=`<td class="calc" id="pmh-tot">${pmhTotalCell()}</td>`;
+    body+=`<tr>${pmhRow}</tr>`;
+    // $PMH (-train) -> literal --
+    body+=dashRow("$PMH (-trn)");
+
+    const legend=`
+      <details class="sched-legend">
+        <summary>Notation legend</summary>
+        <table>
+          <tr><td><b>X</b> Day Off</td><td><b>R</b> Request Off</td><td><b>N/A</b> Not Avail</td></tr>
+          <tr><td><b>(M)</b> Minor</td><td><b>(8)</b> 30-min Break</td><td><b>T</b> Training</td></tr>
+          <tr><td><b>FO/PO</b> Food/Pop Order</td><td><b>PW</b> Paperwork</td><td><b>CL</b> Close</td></tr>
+          <tr><td><b>(D)</b> Delivery shift</td><td><b>(I)</b> Insider shift</td><td></td></tr>
+        </table>
+      </details>`;
+
+    elView.innerHTML=`
+      <div class="sched-scroll">
+        <table class="sched">
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      ${legend}`;
+    elFooter.innerHTML="";
+
+    // wiring
+    document.getElementById("schHome").onclick=openHome;
+    document.getElementById("schWeeks").onclick=()=>go("weeks");
+    document.getElementById("schPeople").onclick=()=>go("people");
+    document.getElementById("schSettings").onclick=()=>go("settings");
+    elView.querySelectorAll("td.cell").forEach(td=>{
+      td.onclick=()=>openCellEditor(td.getAttribute("data-pid"), Number(td.getAttribute("data-d")));
+    });
+    elView.querySelectorAll("td.note").forEach(td=>{
+      td.onclick=()=>openNoteEditor(td.getAttribute("data-note"), Number(td.getAttribute("data-d")));
+    });
+    elView.querySelectorAll("input.proj-in").forEach(inp=>{
+      inp.oninput=()=>{
+        const arrKey=inp.getAttribute("data-arr"), d=Number(inp.getAttribute("data-d"));
+        const raw=inp.value.trim();
+        week().projections[arrKey][d] = raw===""? null : (isNaN(Number(raw))? null : Number(raw));
+        save(); recomputeProjCells();
+      };
+    });
+  }
+  function projInputRow(label, arrKey, arr, idp){
+    let row=`<td class="rowlbl">${esc(label)}</td>`;
+    for(let d=0; d<7; d++){
+      const v=(arr[d]==null?"":arr[d]);
+      row+=`<td class="calc" colspan="2"><input class="proj-in" inputmode="numeric" data-arr="${arrKey}" data-d="${d}" value="${esc(String(v))}"></td>`;
+    }
+    row+=`<td class="calc" id="${idp}-tot">${money(sumArr(arr))}</td>`;
+    return `<tr>${row}</tr>`;
+  }
+  function dashRow(label){
+    let row=`<td class="rowlbl">${esc(label)}</td>`;
+    for(let d=0; d<7; d++) row+=`<td class="calc" colspan="2">--</td>`;
+    row+=`<td class="calc">--</td>`;
+    return `<tr>${row}</tr>`;
+  }
+  function sumArr(arr){ let t=0,any=false; for(const v of arr){ if(v!=null){ t+=Number(v)||0; any=true; } } return any?t:null; }
+  function money(n){ return n==null? "" : "$"+Math.round(n); }
+  function pmhCell(d){
+    const sales=week().projections.projSales[d], hrs=dayScheduledHours(d);
+    return (hrs>0 && sales!=null) ? (sales/hrs).toFixed(2) : "";
+  }
+  function pmhTotalCell(){
+    const sales=sumArr(week().projections.projSales);
+    let hrs=0; for(let d=0; d<7; d++) hrs+=dayScheduledHours(d);
+    return (hrs>0 && sales!=null) ? (sales/hrs).toFixed(2) : "";
+  }
+  function recomputeProjCells(){
+    const lt=document.getElementById("ly-tot"); if(lt) lt.textContent=money(sumArr(week().projections.lastYearSales));
+    const pt=document.getElementById("ps-tot"); if(pt) pt.textContent=money(sumArr(week().projections.projSales));
+    for(let d=0; d<7; d++){ const c=document.getElementById("pmh-d"+d); if(c) c.textContent=pmhCell(d); }
+    const tot=document.getElementById("pmh-tot"); if(tot) tot.textContent=pmhTotalCell();
+  }
+
+  /* ---------------- cell editor sheet ---------------- */
+  function personById(id){ return week().people.find(p=>p.id===id)||null; }
+  function openCellEditor(pid, d){
+    const p=personById(pid); if(!p) return;
+    const sh=p.shifts[d] || { raw:"", hours:0, hoursOverridden:false, tags:emptyTags() };
+    let draftRaw = sh.raw||"";
+    let tags = Object.assign(emptyTags(), sh.tags||{});
+    let overridden = !!sh.hoursOverridden;
+    let overVal = Number(sh.hours)||0;
+    const dn=dayDate(state.currentWeek, d).getDate();
+
+    function compute(){ return parseShiftHours(draftRaw, d, state.closeTimes); }
+    const TAGDEFS=[["delivery","D"],["insider","I"],["training","T"],["break30","(8)"],["town","Town"]];
+
+    function paint(){
+      const auto=compute();
+      const shown=overridden? overVal : auto;
+      overlayRoot.innerHTML=`
+        <div class="overlay" id="schOv">
+          <div class="pad">
+            <div class="padhead"><div class="l">${esc(p.name||"—")} · ${DAYS[d]} ${dn}</div></div>
+            <input class="schfield" id="schRaw" inputmode="text" autocomplete="off" value="${esc(draftRaw)}" placeholder="e.g. 4-CL">
+            <div class="schquick">
+              <button data-q="X">X</button><button data-q="R">R</button>
+              <button data-q="CL">CL</button><button data-q="">Clear</button>
+            </div>
+            <div class="schtags">
+              ${TAGDEFS.map(([k,lbl])=>`<button data-tag="${k}" class="${tags[k]?'on':''}">${lbl}</button>`).join("")}
+            </div>
+            <div class="schhrs">
+              <span class="lbl">Hours <span class="auto">(auto ${fmt(auto)})</span></span>
+              <button class="ovbtn ${overridden?'on':''}" id="schOvBtn">${overridden?'Manual':'Auto'}</button>
+              <input id="schHrs" inputmode="decimal" value="${fmt(shown)}" ${overridden?'':'disabled'}>
+            </div>
+            <button class="btn primary" id="schDone">Done</button>
+          </div>
+        </div>`;
+      wire();
+    }
+    function wire(){
+      const ovEl=document.getElementById("schOv");
+      ovEl.onclick=e=>{ if(e.target===ovEl) saveAndClose(); };
+      const rawEl=document.getElementById("schRaw");
+      rawEl.oninput=()=>{ draftRaw=rawEl.value; if(!overridden){ const a=compute(); overVal=a; } refreshHrsLabel(); };
+      overlayRoot.querySelectorAll(".schquick button").forEach(b=>{
+        b.onclick=()=>{ draftRaw=b.getAttribute("data-q"); paint(); };
+      });
+      overlayRoot.querySelectorAll(".schtags button").forEach(b=>{
+        b.onclick=()=>{ const k=b.getAttribute("data-tag"); tags[k]=!tags[k]; b.classList.toggle("on",tags[k]); };
+      });
+      document.getElementById("schOvBtn").onclick=()=>{ overridden=!overridden; if(overridden) overVal=compute(); paint(); };
+      const hrsEl=document.getElementById("schHrs");
+      if(hrsEl) hrsEl.oninput=()=>{ overVal=Number(hrsEl.value)||0; };
+      document.getElementById("schDone").onclick=saveAndClose;
+    }
+    function refreshHrsLabel(){
+      const auto=compute();
+      const lbl=overlayRoot.querySelector(".schhrs .auto"); if(lbl) lbl.textContent=`(auto ${fmt(auto)})`;
+      if(!overridden){ const hrsEl=document.getElementById("schHrs"); if(hrsEl) hrsEl.value=fmt(auto); }
+    }
+    function saveAndClose(){
+      overlayRoot.innerHTML="";
+      const rawTrim=(draftRaw||"").trim();
+      // merge tags typed into raw with toggle states
+      const parsed=stripTags(rawTrim);
+      const merged=emptyTags(); for(const k in merged) merged[k]=tags[k]||parsed.tags[k];
+      if(rawTrim==="" && !overridden){ delete p.shifts[d]; }
+      else {
+        p.shifts[d]={ raw:rawTrim, hours: overridden? overVal : compute(),
+                      hoursOverridden: overridden, tags: merged };
+      }
+      save(); renderGrid();
+    }
+    paint();
+  }
+
+  function openNoteEditor(rowKey, d){
+    const rowDef=IMPORTANT_ROWS.find(r=>r.key===rowKey);
+    const dn=dayDate(state.currentWeek, d).getDate();
+    const cur=(week().important[rowKey]||[])[d]||"";
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="schNoteOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">${esc(rowDef?rowDef.label:rowKey)} · ${DAYS[d]} ${dn}</div></div>
+          <input class="schfield" id="schNote" inputmode="text" autocomplete="off" value="${esc(cur)}" placeholder="note">
+          <button class="btn primary" id="schNoteDone">Done</button>
+        </div>
+      </div>`;
+    const ovEl=document.getElementById("schNoteOv");
+    function done(){ week().important[rowKey][d]=document.getElementById("schNote").value.trim(); overlayRoot.innerHTML=""; save(); renderGrid(); }
+    ovEl.onclick=e=>{ if(e.target===ovEl) done(); };
+    document.getElementById("schNoteDone").onclick=done;
+  }
+
+  /* ---------------- PEOPLE ---------------- */
+  function renderPeople(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="schBack" aria-label="Back">←</button>
+      <h1>People <span class="sub">${esc(weekLabel(state.currentWeek))}</span></h1>`;
+    elView.className="";
+    const w=week();
+    let html="";
+    for(const sec of SECTIONS){
+      html+=`<div class="set-sec-h"><h2>${esc(sec.label)}</h2></div>`;
+      const ppl=w.people.filter(p=>p.section===sec.key);
+      for(const p of ppl){
+        html+=`
+          <div class="set-item" data-id="${esc(p.id)}">
+            <div class="top">
+              <input class="nameinp" value="${esc(p.name)}" placeholder="Name">
+              <div class="order">
+                <button class="miniicon mvup" aria-label="Up">↑</button>
+                <button class="miniicon mvdn" aria-label="Down">↓</button>
+                <button class="miniicon del" aria-label="Remove">🗑</button>
+              </div>
+            </div>
+            <div class="top">
+              <select class="secsel">${SECTIONS.map(s=>`<option value="${s.key}" ${s.key===p.section?'selected':''}>${esc(s.label)}</option>`).join("")}</select>
+              <button class="miniicon mtog ${p.minor?'on':''}" aria-label="Minor toggle" style="${p.minor?'background:var(--accent2);color:#06210f;':''}">M</button>
+            </div>
+          </div>`;
+      }
+      html+=`<button class="addbtn" data-add="${sec.key}">+ Add ${esc(sec.label.replace(/s$/,""))}</button>`;
+    }
+    elView.innerHTML=html;
+    elFooter.innerHTML="";
+
+    document.getElementById("schBack").onclick=()=>go("grid");
+    elView.querySelectorAll("button.addbtn").forEach(b=>{
+      b.onclick=()=>{ w.people.push({ id:uid(), name:"", section:b.getAttribute("data-add"), minor:false, shifts:{} }); save(); renderPeople(); };
+    });
+    elView.querySelectorAll(".set-item").forEach(el=>{
+      const id=el.getAttribute("data-id");
+      const p=personById(id); if(!p) return;
+      el.querySelector(".nameinp").oninput=e=>{ p.name=e.target.value; save(); };
+      el.querySelector(".secsel").onchange=e=>{ p.section=e.target.value; save(); renderPeople(); };
+      el.querySelector(".mtog").onclick=()=>{ p.minor=!p.minor; save(); renderPeople(); };
+      el.querySelector(".mvup").onclick=()=>{ moveWithinSection(id,-1); };
+      el.querySelector(".mvdn").onclick=()=>{ moveWithinSection(id,1); };
+      el.querySelector(".del").onclick=()=>{
+        if(confirm(`Remove ${p.name||"this person"}?`)){ w.people=w.people.filter(x=>x.id!==id); save(); renderPeople(); }
+      };
+    });
+  }
+  function moveWithinSection(id, dir){
+    const ppl=week().people;
+    const p=ppl.find(x=>x.id===id); if(!p) return;
+    const idxs=ppl.map((x,i)=>x.section===p.section?i:-1).filter(i=>i>=0);
+    const pos=idxs.indexOf(ppl.indexOf(p));
+    const swap=pos+dir;
+    if(swap<0||swap>=idxs.length) return;
+    const a=idxs[pos], b=idxs[swap];
+    [ppl[a], ppl[b]]=[ppl[b], ppl[a]];
+    save(); renderPeople();
+  }
+
+  /* ---------------- WEEKS ---------------- */
+  function renderWeeks(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="schBack" aria-label="Back">←</button>
+      <h1>Weeks</h1>`;
+    elView.className="";
+    const keys=Object.keys(state.weeks).sort();
+    let list="";
+    for(const k of keys){
+      const cur=k===state.currentWeek;
+      const cnt=state.weeks[k].people.length;
+      list+=`
+        <div class="set-item" data-wk="${esc(k)}" style="${cur?'border-color:var(--accent2);':''}">
+          <div class="top" style="margin:0;">
+            <div style="flex:1;"><b style="font-size:15px;">${esc(weekLabel(k))}</b>
+              <small style="color:var(--muted);display:block;">${esc(k)} · ${cnt} ${cnt===1?'person':'people'}${cur?' · current':''}</small></div>
+            ${keys.length>1?`<button class="miniicon del wkdel" aria-label="Delete week">🗑</button>`:''}
+          </div>
+        </div>`;
+    }
+    elView.innerHTML=`
+      ${list}
+      <div class="setcard">
+        <h3>New week</h3>
+        <p>Pick any date — it snaps to that week's Monday.</p>
+        <input class="txt" type="date" id="newWkDate" value="${esc(mondayOfToday())}">
+        <div style="height:10px;"></div>
+        <button class="btn primary" id="newWkBtn">Create week</button>
+      </div>`;
+    elFooter.innerHTML="";
+
+    document.getElementById("schBack").onclick=()=>go("grid");
+    elView.querySelectorAll(".set-item[data-wk]").forEach(el=>{
+      const k=el.getAttribute("data-wk");
+      el.onclick=e=>{ if(e.target.closest(".wkdel")) return; state.currentWeek=k; save(); go("grid"); };
+      const del=el.querySelector(".wkdel");
+      if(del) del.onclick=()=>{
+        if(confirm(`Delete ${weekLabel(k)}? This erases that week's schedule.`)){
+          delete state.weeks[k];
+          if(state.currentWeek===k) state.currentWeek=Object.keys(state.weeks).sort()[0];
+          save(); renderWeeks();
+        }
+      };
+    });
+    document.getElementById("newWkBtn").onclick=()=>{
+      const raw=document.getElementById("newWkDate").value;
+      if(!raw){ toast("Pick a date"); return; }
+      const mon=mondayISO(parseISO(raw));
+      if(state.weeks[mon]){ state.currentWeek=mon; save(); toast("Week already exists"); go("grid"); return; }
+      const nw=blankWeek(mon);
+      if(week().people.length && confirm("Copy people from the current week? OK = copy roster (blank shifts), Cancel = start empty.")){
+        nw.people=week().people.map(p=>({ id:uid(), name:p.name, section:p.section, minor:p.minor, shifts:{} }));
+      }
+      state.weeks[mon]=nw; state.currentWeek=mon; save(); go("grid");
+    };
+  }
+
+  /* ---------------- SETTINGS (close times) ---------------- */
+  function renderSettings(){
+    elBar.innerHTML=`
+      <button class="iconbtn" id="schBack" aria-label="Back">←</button>
+      <h1>Close Times</h1>`;
+    elView.className="";
+    const ct=state.closeTimes;
+    elView.innerHTML=`
+      <div class="setcard">
+        <h3>Store close times</h3>
+        <p>Drives <b>CL</b> in shift math. Use 24-hour time. Fri/Sat after midnight (e.g. 00:30).</p>
+        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">Sun–Thu close</label>
+        <input class="txt" type="time" id="ctSunThu" value="${esc(ct.sunThu||'22:30')}">
+        <div style="height:10px;"></div>
+        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;">Fri–Sat close</label>
+        <input class="txt" type="time" id="ctFriSat" value="${esc(ct.friSat||'00:30')}">
+      </div>
+      <div class="sched-legend" style="margin-top:6px;">Changing these re-derives all auto hours on the grid.</div>`;
+    elFooter.innerHTML="";
+    document.getElementById("schBack").onclick=()=>go("grid");
+    document.getElementById("ctSunThu").onchange=e=>{ state.closeTimes.sunThu=e.target.value||"22:30"; save(); };
+    document.getElementById("ctFriSat").onchange=e=>{ state.closeTimes.friSat=e.target.value||"00:30"; save(); };
+  }
+
+  try{ _selftest(); }catch(e){}
+  return { STORE, render, reset, reload };
+})();
+
 const TOOL_VIEWS = {
   nightlyInventory: ()=>Inv.render(),
   drawerCash: ()=>DrawerCash.render(),
+  scheduleMaker: ()=>Sched.render(),
 };
 
 /* ====================================================================

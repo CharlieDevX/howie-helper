@@ -51,6 +51,8 @@ jobs:
           sed -i \
             -e 's/howiehelper\.shell\.v1/howiehelper.shell.v1.dev/g' \
             -e 's/"howiehelper\.v1"/"howiehelper.v1.dev"/g' \
+            -e 's/"howiehelper\.drawerCash\.v1"/"howiehelper.drawerCash.v1.dev"/g' \
+            -e 's/"howiehelper\.scheduleMaker\.v1"/"howiehelper.scheduleMaker.v1.dev"/g' \
             -e 's/name:"Howie Helper"/name:"Howie Helper DEV"/g' \
             -e 's#<title>Howie Helper</title>#<title>Howie Helper (DEV)</title>#' \
             -e 's/content="Howie Helper"/content="Howie Helper DEV"/' \

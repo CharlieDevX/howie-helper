@@ -375,6 +375,9 @@
     body.hh-printing #hhPrintHost .page{box-shadow:none;width:auto;min-height:auto;margin:0;padding:0;}
     body.hh-printing #hhPrintHost .list,body.hh-printing #hhPrintHost .sec-h,
     body.hh-printing #hhPrintHost .row{page-break-inside:avoid;}
+    /* Nightly Numbers printable: keep calc/miss shading in print/PDF */
+    body.hh-printing #hhPrintHost.nnp tr.calc th,body.hh-printing #hhPrintHost.nnp tr.calc td,
+    body.hh-printing #hhPrintHost.nnp td.miss{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
   /* ---------- Schedule Maker ---------- */
@@ -504,6 +507,74 @@
   .nn-plbl{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.4px;margin-bottom:4px;}
   .pad .nn-plbl{margin-top:6px;}
+
+  /* ---------- Nightly Numbers — Shareable export (ported from mockup, scoped .nnx) ---------- */
+  .nnx{ --red:#C8102E; --red-dk:#8a1015; --gold:#FFC72C; --cream:#FFF6E5; --ink:#1f1c1a; --muted:#8a8a8a;
+        --calc:#FFF7E2; --calcline:#ecd9a8; --line:#dcdcdc; --future:#f7f7f7; --good:#1c7d3e; --bad:#c0202e;
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+  .nnx *{ box-sizing:border-box; }
+  .nnx .page{ width:8.5in; height:11in; background:#fff; overflow:hidden; display:flex; flex-direction:column; }
+  .nnx .head{ background:var(--red); padding:22px 30px; display:flex; align-items:center; justify-content:space-between; }
+  .nnx .brand{ display:flex; align-items:center; gap:14px; }
+  .nnx .logo{ width:52px; height:52px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:30px; }
+  .nnx .brand .name{ color:#fff; font-size:26px; font-weight:800; line-height:1.05; }
+  .nnx .brand .sub{ color:var(--gold); font-size:14px; font-weight:700; letter-spacing:.6px; }
+  .nnx .head .meta{ text-align:right; color:#fff; }
+  .nnx .head .meta .d{ font-size:18px; font-weight:700; }
+  .nnx .head .meta .by{ font-size:13px; color:#f6d9a0; }
+  .nnx .strip{ background:var(--cream); padding:13px 30px; display:flex; justify-content:space-between; align-items:center;
+          color:#6b5a2e; border-bottom:1px solid rgba(0,0,0,.06); }
+  .nnx .kpis{ display:flex; gap:34px; }
+  .nnx .kpi b{ display:block; font-size:23px; font-weight:800; color:var(--red-dk); line-height:1.1; }
+  .nnx .kpi span{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:#9a8854; }
+  .nnx .strip .prog{ font-size:14px; font-weight:600; }
+  .nnx .body{ padding:0 30px; flex:1; display:flex; }
+  .nnx table{ width:100%; height:100%; border-collapse:collapse; font-size:16px; table-layout:fixed; }
+  .nnx col.lbl{ width:178px; }
+  .nnx thead th{ background:#26211f; color:#fff; font-weight:700; padding:10px 4px; text-align:center; font-size:15px; }
+  .nnx thead th.lbl{ text-align:left; padding-left:12px; }
+  .nnx thead th .dn{ display:block; color:var(--gold); font-weight:800; font-size:17px; margin-top:1px; }
+  .nnx tbody th{ text-align:left; font-weight:600; color:#33302e; padding:0 12px; font-size:13.5px; background:#fff;
+            border-bottom:1px solid var(--line); line-height:1.15; }
+  .nnx tbody th small{ display:block; font-size:10px; color:#aa9; font-weight:600; }
+  .nnx tbody td{ text-align:center; padding:0 4px; border-bottom:1px solid var(--line); border-left:1px solid var(--line);
+            font-variant-numeric:tabular-nums; color:#111; font-weight:600; }
+  .nnx tbody td.future{ background:var(--future); color:#cfcfcf; font-weight:500; }
+  .nnx tr.calc th{ background:var(--calc); color:var(--red-dk); font-weight:800; border-bottom:1px solid var(--calcline); }
+  .nnx tr.calc td{ background:var(--calc); font-weight:800; border-bottom:1px solid var(--calcline); }
+  .nnx tr.calc td.future{ background:#fbf6ea; color:#d8c7a0; }
+  .nnx .pos{ color:var(--good); } .nnx .neg{ color:var(--bad); }
+  .nnx .good{ color:var(--good); font-weight:800; } .nnx .bad{ color:var(--bad); font-weight:800; }
+  .nnx .dd{ color:#9a9a9a; font-size:11px; font-weight:500; }
+  .nnx .notes{ padding:11px 30px; font-size:11.5px; color:#7a7a7a; display:flex; gap:30px; flex-wrap:wrap; border-top:1px dashed #e0e0e0; }
+  .nnx .notes b{ color:#555; }
+  .nnx .foot{ background:#1a1a1a; color:#cfcfcf; font-size:12px; padding:12px 30px; display:flex; justify-content:space-between; align-items:center; }
+  .nnx .legend{ display:flex; gap:16px; }
+  .nnx .legend i{ font-style:normal; display:inline-flex; align-items:center; gap:6px; }
+  .nnx .sw{ width:13px; height:13px; border-radius:3px; display:inline-block; }
+
+  /* ---------- Nightly Numbers — Printable export (ported from mockup, scoped .nnp) ---------- */
+  .nnp{ font-family:"Helvetica Neue",Arial,sans-serif; color:#000; }
+  .nnp *{ box-sizing:border-box; }
+  .nnp .page{ width:8.5in; height:11in; background:#fff; padding:0.5in 0.45in; display:flex; flex-direction:column; }
+  .nnp .hd{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2.5px solid #000; padding-bottom:9px; }
+  .nnp .hd .t{ font-size:25px; font-weight:800; letter-spacing:.5px; }
+  .nnp .hd .t small{ display:block; font-size:12px; font-weight:600; letter-spacing:1.5px; color:#444; margin-top:3px; }
+  .nnp .hd .m{ text-align:right; font-size:14px; }
+  .nnp .hd .m b{ font-size:16px; }
+  .nnp table{ width:100%; flex:1; border-collapse:collapse; font-size:15.5px; margin-top:14px; table-layout:fixed; }
+  .nnp col.lbl{ width:1.85in; }
+  .nnp th,.nnp td{ border:1px solid #000; padding:0 4px; text-align:center; font-variant-numeric:tabular-nums; }
+  .nnp thead th{ font-size:14px; font-weight:700; padding:7px 4px; }
+  .nnp thead th .dn{ display:block; font-size:15px; font-weight:800; }
+  .nnp tbody th{ text-align:left; font-weight:600; padding-left:7px; font-size:12.5px; line-height:1.15; }
+  .nnp tbody th small{ display:block; font-size:9.5px; font-weight:600; color:#555; }
+  .nnp tr.calc th,.nnp tr.calc td{ background:#e8e8e8; font-weight:800; }
+  .nnp td.future{ color:#bbb; }
+  .nnp td.miss{ background:#d6d6d6; font-weight:800; }   /* missed goal — reads on B/W */
+  .nnp .ddp{ font-weight:600; }
+  .nnp .ft{ margin-top:10px; padding-top:9px; font-size:11px; color:#222; display:flex; gap:24px; flex-wrap:wrap; border-top:1.5px solid #000; }
+  .nnp .ft b{ color:#000; }
 </style>
 </head>
 <body>
@@ -2655,6 +2726,7 @@ const Numbers = (function(){
   }
   function pctStr(n){ return n==null? "" : (Math.round(Number(n)*100)/100).toFixed(2)+"%"; }
   function signed(n){ n=Math.round((Number(n)||0)*100)/100; if(n===0) return "0.00"; return (n>0?"+":"-")+Math.abs(n).toFixed(2); }
+  function signedMoney(n){ n=Math.round((Number(n)||0)*100)/100; if(n===0) return "$0.00"; return (n>0?"+$":"-$")+money2(Math.abs(n)); }
 
   /* ---------------- row model: one source feeds the grid + both exports ----------------
      Each row produces a per-day cell { text, blank, calc, goal:'good'|'bad'|null,
@@ -2738,7 +2810,7 @@ const Numbers = (function(){
       kpis: last>=0 ? {
         salesToDate: money2(salesToDate(last)),
         laborPctTD:  laborPctToDate(last)!=null? pctStr(laborPctToDate(last)) : "—",
-        cashToDate:  signed(cashToDate(last)),
+        cashToDate:  signedMoney(cashToDate(last)),
         cashSign:    cashToDate(last)>0?"pos":(cashToDate(last)<0?"neg":"")
       } : null,
       stamp: fmtStamp()
@@ -3093,9 +3165,209 @@ const Numbers = (function(){
     state.weeks[k]=w; state.currentWeek=k; state.storeNumber="84";
   }
 
-  /* ---------------- export (chooser → shareable image / printable PDF) ---------------- */
-  function openExportChooser(){ exportStub(); }
-  function exportStub(){ toast("Export coming next"); }   // replaced in export commit
+  /* ---------------- export (chooser → shareable image / printable PDF) ----------------
+     Both ported verbatim from the locked mockups (export-mockup-numbers-*.html),
+     bound to live data. Shareable: html2canvas → navigator.share (preview fallback).
+     Printable: window.print() via the shared #hhPrintHost / @page letter portrait. */
+  function expName(ext){ return "daily-numbers-"+state.currentWeek+"."+ext; }
+
+  function cellHTMLx(cell, rowKey){            // shareable cell (red/gold; green/red goals)
+    const cls=[];
+    if(cell.blank) cls.push("future");
+    if(cell.goal==="good") cls.push("good"); else if(cell.goal==="bad") cls.push("bad");
+    if(cell.sign==="pos") cls.push("pos"); else if(cell.sign==="neg") cls.push("neg");
+    let inner=esc(cell.text);
+    if(rowKey==="dd" && !cell.blank && cell.dd!=null) inner+=`<span class="dd"> (${cell.dd})</span>`;
+    return `<td${cls.length?` class="${cls.join(" ")}"`:""}>${inner}</td>`;
+  }
+  function cellHTMLp(cell, rowKey){            // printable cell (black ink; miss = grey+bold)
+    const cls=[];
+    if(cell.blank) cls.push("future");
+    if(cell.goal==="bad") cls.push("miss");   // missed goal reads on B/W; "good" is unstyled
+    const inner = cell.blank ? (rowKey==="lunch" ? "" : "—") : esc(cell.text);
+    return `<td${cls.length?` class="${cls.join(" ")}"`:""}>${inner}</td>`;
+  }
+  function dayHeadHTML(d){
+    return DAYS.map((dn,i)=>`<th>${dn}<span class="dn">${d.dates[i]}</span></th>`).join("");
+  }
+  function rowLabelHTML(r, ddhintCls){
+    let extra="";
+    if(r.key==="dd") extra=` <span class="${ddhintCls}">#×$${money2(ddRate())}</span>`;
+    else if(r.sub) extra=` <small>${esc(r.sub)}</small>`;
+    return esc(r.label)+extra;
+  }
+
+  function numbersShareableHTML(d){
+    const body=d.rows.map(r=>`
+      <tr${r.calc?' class="calc"':''}><th>${rowLabelHTML(r,"dd")}</th>${r.cells.map(c=>cellHTMLx(c,r.key)).join("")}</tr>`).join("");
+    const k=d.kpis;
+    const strip = k
+      ? `<div class="kpis">
+           <div class="kpi"><b>$${esc(k.salesToDate)}</b><span>Sales to date</span></div>
+           <div class="kpi"><b>${esc(k.laborPctTD)}</b><span>Labor % to date</span></div>
+           <div class="kpi"><b>${esc(k.cashToDate)}</b><span>Cash to date</span></div>
+         </div>
+         <span class="prog">${d.daysEntered} of 7 days entered</span>`
+      : `<div class="kpis"><div class="kpi"><b>—</b><span>No days entered yet</span></div></div>
+         <span class="prog">0 of 7 days entered</span>`;
+    return `<div class="page">
+      <div class="head">
+        <div class="brand"><div class="logo">🍕</div><div>
+          <div class="name">Hungry Howie's</div><div class="sub">DAILY NUMBERS · STORE ${esc(d.storeNumber)}</div>
+        </div></div>
+        <div class="meta"><div class="d">Week of ${esc(d.weekRange)}</div>${d.throughLabel?`<div class="by">Through ${esc(d.throughLabel)}</div>`:""}</div>
+      </div>
+      <div class="strip">${strip}</div>
+      <div class="body">
+        <table>
+          <colgroup><col class="lbl"><col><col><col><col><col><col><col></colgroup>
+          <thead><tr><th class="lbl">&nbsp;</th>${dayHeadHTML(d)}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="notes">
+        <span><b>Labor %</b> = Total Labor $ ÷ Net Daily Sales</span>
+        <span><b>Total Labor $</b> = Labor $ + Driver Comp $ + Door Dash $</span>
+        <span><b>Door Dash $</b> = deliveries × $${money2(ddRate())}</span>
+      </div>
+      <div class="foot">
+        <div class="legend">
+          <i><span class="sw" style="background:#fff;border:1px solid #888"></span>Entered</i>
+          <i><span class="sw" style="background:var(--calc);border:1px solid var(--calcline)"></span>Calculated</i>
+          <i><span class="sw" style="background:var(--good)"></span>Meets goal</i>
+          <i><span class="sw" style="background:var(--bad)"></span>Missed goal</i>
+        </div>
+        <span>Generated by Howie Helper · ${esc(d.stamp)}</span>
+      </div>
+    </div>`;
+  }
+
+  function numbersPrintableHTML(d){
+    const body=d.rows.map(r=>`
+      <tr${r.calc?' class="calc"':''}><th>${rowLabelHTML(r,"ddp")}</th>${r.cells.map(c=>cellHTMLp(c,r.key)).join("")}</tr>`).join("");
+    return `<div class="page">
+      <div class="hd">
+        <div class="t">DAILY NUMBERS<small>HOWIE HELPER · STORE ${esc(d.storeNumber)}</small></div>
+        <div class="m"><b>Week of ${esc(d.weekRange)}</b>${d.throughLabel?`<br>Through ${esc(d.throughLabel)}`:""}</div>
+      </div>
+      <table>
+        <colgroup><col class="lbl"><col><col><col><col><col><col><col></colgroup>
+        <thead><tr><th style="text-align:left">&nbsp;</th>${dayHeadHTML(d)}</tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <div class="ft">
+        <span><b>Labor %</b> = Total Labor $ / Net Daily Sales</span>
+        <span><b>Total Labor $</b> = Labor $ + Driver Comp $ + DD Drive $</span>
+        <span><b>Door Dash $</b> = deliveries × $${money2(ddRate())}</span>
+        <span><b>Shaded OTD/Late%</b> = missed goal</span>
+      </div>
+    </div>`;
+  }
+
+  async function downloadOrShare(blob, ext){
+    if(!blob){ toast("Could not create file"); return; }
+    const name=expName(ext), type=blob.type||(ext==="pdf"?"application/pdf":"image/png");
+    try{
+      const file=new File([blob],name,{type});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"Daily Numbers"}); return;
+      }
+    }catch(e){ /* fall through to download */ }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast(ext.toUpperCase()+" saved");
+  }
+  function savePdf(canvas){
+    try{
+      const { jsPDF }=window.jspdf;
+      const pdf=new jsPDF({unit:"pt",format:"letter",orientation:"portrait"});
+      const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+      let iw=pw, ih=pw*canvas.height/canvas.width;
+      if(ih>ph){ ih=ph; iw=ph*canvas.width/canvas.height; }
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pw-iw)/2,0,iw,ih);
+      downloadOrShare(pdf.output("blob"),"pdf");
+    }catch(e){ toast("Could not create PDF"); }
+  }
+  function openExportPreview(canvas){
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="nnxOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Daily Numbers — Export</div></div>
+          <div class="hhx-preview"><img src="${canvas.toDataURL("image/png")}" alt="Export preview"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn good" id="nnxPng">Save PNG</button>
+            <button class="btn ghost" id="nnxPdf">Save PDF</button>
+          </div>
+          <div class="btn-row" style="margin-top:10px">
+            <button class="btn ghost" id="nnxPrint">Print sheet</button>
+            <button class="btn ghost" id="nnxClose">Close</button>
+          </div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("nnxOv").onclick=e=>{ if(e.target.id==="nnxOv") close(); };
+    document.getElementById("nnxClose").onclick=close;
+    document.getElementById("nnxPng").onclick=()=>canvas.toBlob(b=>downloadOrShare(b,"png"),"image/png");
+    document.getElementById("nnxPdf").onclick=()=>savePdf(canvas);
+    document.getElementById("nnxPrint").onclick=()=>{ close(); printSheet(); };
+  }
+  async function shareImage(){
+    overlayRoot.innerHTML="";                  // close chooser
+    const host=document.createElement("div");
+    host.className="nnx"; host.style.cssText="position:absolute;left:-10000px;top:0;";
+    host.innerHTML=numbersShareableHTML(exportData());
+    document.body.appendChild(host);
+    let canvas;
+    try{
+      canvas=await html2canvas(host.querySelector(".page"),
+        {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+    }catch(e){ host.remove(); toast("Could not create image"); return; }
+    host.remove();
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    if(blob){
+      try{
+        const file=new File([blob],expName("png"),{type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:"Daily Numbers"}); return;
+        }
+      }catch(e){ /* cancelled/unsupported → saveable preview */ }
+    }
+    openExportPreview(canvas);
+  }
+  function printSheet(){
+    overlayRoot.innerHTML="";                  // close chooser
+    const host=document.createElement("div");
+    host.id="hhPrintHost"; host.className="nnp";   // reuse shared print host + @media print reveal
+    host.innerHTML=numbersPrintableHTML(exportData());
+    document.body.appendChild(host);
+    document.body.classList.add("hh-printing");
+    let cleaned=false;
+    const cleanup=()=>{ if(cleaned) return; cleaned=true;
+      host.remove(); document.body.classList.remove("hh-printing");
+      window.removeEventListener("afterprint",cleanup); };
+    window.addEventListener("afterprint",cleanup);
+    setTimeout(()=>{ try{ window.print(); }catch(e){} }, 60);
+    setTimeout(cleanup, 60000);
+  }
+  function openExportChooser(){
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="nnExpOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Export · Week of ${esc(weekRangeLabel(state.currentWeek))}</div></div>
+          <p class="nn-padp">Send the night's numbers to the group chat, or print / save a PDF.</p>
+          <div class="btn-row"><button class="btn good" id="nnShareBtn">📷&nbsp; Shareable image</button></div>
+          <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="nnPrintBtn">🖨&nbsp; Printable / PDF</button></div>
+          <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="nnExpClose">Cancel</button></div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("nnExpOv").onclick=e=>{ if(e.target.id==="nnExpOv") close(); };
+    document.getElementById("nnExpClose").onclick=close;
+    document.getElementById("nnShareBtn").onclick=()=>shareImage();
+    document.getElementById("nnPrintBtn").onclick=()=>printSheet();
+  }
 
   /* ---------------- self-test (verifies calc engine vs. the mockups) ---------------- */
   function _selftest(){

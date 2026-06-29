@@ -54,6 +54,7 @@ jobs:
             -e 's/"howiehelper\.drawerCash\.v1"/"howiehelper.drawerCash.v1.dev"/g' \
             -e 's/"howiehelper\.scheduleMaker\.v1"/"howiehelper.scheduleMaker.v1.dev"/g' \
             -e 's/"howiehelper\.numbers\.v1"/"howiehelper.numbers.v1.dev"/g' \
+            -e 's/"howiehelper\.doughBuild\.v1"/"howiehelper.doughBuild.v1.dev"/g' \
             -e 's/name:"Howie Helper"/name:"Howie Helper DEV"/g' \
             -e 's#<title>Howie Helper</title>#<title>Howie Helper (DEV)</title>#' \
             -e 's/content="Howie Helper"/content="Howie Helper DEV"/' \

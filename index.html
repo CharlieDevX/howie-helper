@@ -720,6 +720,27 @@
   .schp.portrait tr.band td{ font-size:9.5px; letter-spacing:.4px; padding:2px 5px; }
   .schp.portrait tr.note td{ font-size:9px; }
   .schp.portrait .ft{ margin-top:8px; padding-top:7px; font-size:9px; gap:12px; }
+
+  /* Dough Build */
+  .db-empty{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px 18px;text-align:center;margin:14px 0;}
+  .db-empty p{color:var(--muted);margin:0 0 14px;font-size:15px;}
+  .db-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 13px 12px;margin:11px 0;}
+  .db-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+  .db-name{display:flex;align-items:center;gap:8px;}
+  .db-name b{font-size:17px;font-weight:700;}
+  .db-chip{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+    color:var(--muted);background:var(--panel2);border:1px solid var(--line);
+    border-radius:7px;padding:2px 7px;}
+  .db-read{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .db-read.build{color:var(--accent2);}
+  .db-read.set{color:var(--good);}
+  .db-read.over{color:var(--danger);}
+  .db-card .nf{margin:0;}
+  .db-card .nfval .tap{text-transform:none;letter-spacing:0;}
+  .db-hint{text-align:right;color:var(--muted);font-size:12px;margin-top:7px;
+    font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -785,7 +806,7 @@ const TOOLS = [
   { id:"drawerCash",       name:"Drawer Cash",            icon:"💵", status:"active", descriptor:"Count safe + drawer → balanced, over or short" },
   { id:"scheduleMaker",    name:"Schedule",               icon:"🗓️", status:"active", descriptor:"Build & edit the weekly staff schedule" },
   { id:"prepBackup",       name:"Prep / Backup Tracker",  icon:"🧰", status:"soon",   descriptor:"Track prep & backups through the night" },
-  { id:"doughBuild",       name:"Dough Build",            icon:"🍞", status:"soon",   descriptor:"How much dough to build to" },
+  { id:"doughBuild",       name:"Dough Build",            icon:"🍞", status:"active", descriptor:"Trays to build, by size" },
   { id:"sheetOut",         name:"Sheet-out Projector",    icon:"📐", status:"soon",   descriptor:"Project skins/dough to sheet out" },
   { id:"salesLabor",       name:"Sales / Labor Projections", icon:"📈", status:"soon", descriptor:"Data-driven sales & labor forecasts" },
 ];
@@ -909,8 +930,8 @@ function renderGlobalSettings(){
   });
   document.getElementById("resetApp").onclick=()=>{
     if(confirm("Reset the whole app? This erases ALL data on this device for every tool, including inventory counts. This cannot be undone.")){
-      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); localStorage.removeItem(Sched.STORE); }catch(e){}
-      shell=loadShell(); Inv.reload(); DrawerCash.reload(); Sched.reload();
+      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); localStorage.removeItem(Sched.STORE); localStorage.removeItem(DoughBuild.STORE); }catch(e){}
+      shell=loadShell(); Inv.reload(); DrawerCash.reload(); Sched.reload(); DoughBuild.reload();
       toast("App reset"); openHome();
     }
   };
@@ -3828,11 +3849,224 @@ const Numbers = (function(){
   return { STORE, render, reset, reload, exportData, _selftest };
 })();
 
+/* ====================================================================
+   DOUGH BUILD — morning "build-to" counter
+   Persists only the per-size build-to target (trays). Trays-on-hand is
+   live working state, never written to disk. needed = buildTo − onHand.
+   ==================================================================== */
+const DoughBuild = (function(){
+  const STORE = "howiehelper.doughBuild.v1";
+  // [code, chip, full name] — fixed order Jr → Xl.
+  const SIZES = [["jr","Jr","Junior"],["sm","Sm","Small"],["md","Md","Medium"],
+                 ["lg","Lg","Large"],["xl","Xl","X-Large"]];
+
+  /* ---------- State + persistence ---------- */
+  function blank(){ return {jr:0,sm:0,md:0,lg:0,xl:0}; }
+  function load(){
+    let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
+    const bt=blank();
+    if(s && typeof s==="object" && s.buildTo && typeof s.buildTo==="object"){
+      SIZES.forEach(([k])=>{ const v=Number(s.buildTo[k]); bt[k]=(isFinite(v)&&v>0)?Math.round(v*2)/2:0; });
+    }
+    return { buildTo: bt };
+  }
+  let state = load();
+  let onHand = blank();                  // live only — never persisted, reset on reload/Clear
+  // Persist ONLY the build-to targets. onHand is intentionally excluded.
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({buildTo: state.buildTo})); }catch(e){} }
+
+  /* ---------- Math + formatting ---------- */
+  function clampHalf(v){ v=Math.round((Number(v)||0)*2)/2; return v<0?0:v; }
+  function needed(k){ return (Number(state.buildTo[k])||0) - (Number(onHand[k])||0); } // can be negative
+  function totalToBuild(){ let t=0; SIZES.forEach(([k])=>{ const n=needed(k); if(n>0) t+=n; }); return t; }
+  function overCount(){ let c=0; SIZES.forEach(([k])=>{ if(needed(k)<-1e-9) c++; }); return c; }
+  function hasAnyBuildTo(){ return SIZES.some(([k])=>(Number(state.buildTo[k])||0)>0); }
+  // 2.5 → "2½", 3 → "3", 0.5 → "½", 0 → "0".
+  function fmtHalf(n){
+    n=Number(n)||0; const neg=n<0; n=Math.abs(n);
+    const whole=Math.floor(n+1e-9), half=(n-whole)>=0.25;
+    const s = half ? ((whole>0?String(whole):"")+"½") : String(whole);
+    return (neg?"-":"")+s;
+  }
+
+  // Press-and-hold to repeat — mirror of Inv/DrawerCash (those copies are IIFE-private).
+  function attachRepeat(btn,fn){
+    let t1=null,t2=null;
+    const start=()=>{ t1=setTimeout(()=>{ t2=setInterval(fn,90); },420); };
+    const stop=()=>{ clearTimeout(t1); clearInterval(t2); };
+    btn.addEventListener("touchstart",start,{passive:true});
+    btn.addEventListener("touchend",stop); btn.addEventListener("touchcancel",stop);
+    btn.addEventListener("mousedown",start); btn.addEventListener("mouseup",stop); btn.addEventListener("mouseleave",stop);
+  }
+
+  /* ---------- Router ---------- */
+  let route={ name:"counter" };
+  function go(name){ route={name}; render(); window.scrollTo(0,0); }
+  function reset(){ route={name:"counter"}; }
+  function reload(){ state=load(); onHand=blank(); route={name:"counter"}; }
+  function render(){ if(route.name==="editor") renderEditor(); else renderCounter(); }
+
+  /* ---------- Shared stepper markup (reuses .nf inventory stepper styles) ---------- */
+  function stepperHTML(val, tap){
+    return `
+      <div class="nf">
+        <div class="nfctl">
+          <button class="nfbtn minus" aria-label="minus">−</button>
+          <button class="nfval" aria-label="value"><span class="num">${esc(fmtHalf(val))}</span><span class="tap">${esc(tap)}</span></button>
+          <button class="nfbtn plus" aria-label="plus">+</button>
+        </div>
+      </div>`;
+  }
+
+  /* ---------- View A: morning counter ---------- */
+  function readParts(k){
+    const n=needed(k);
+    if(n>1e-9)  return ["build", "Build "+fmtHalf(n)];
+    if(n<-1e-9) return ["over",  "Over "+fmtHalf(-n)];
+    return ["set", "Set ✓"];
+  }
+  function refreshSummary(){
+    const tot=document.getElementById("dbTotal"); if(tot) tot.textContent=fmtHalf(totalToBuild());
+    const sub=document.getElementById("dbSub");
+    if(sub){ const c=overCount(); sub.textContent = c>0 ? `${c} size${c>1?"s":""} overstocked` : ""; }
+  }
+  function paintRead(el,k){ const [cls,txt]=readParts(k); el.className="db-read "+cls; el.textContent=txt; }
+
+  function renderCounter(){
+    elBar.innerHTML=`
+      ${homeBtnHTML("dbHome")}
+      <h1>Dough Build <span class="sub">Morning build</span></h1>
+      <button class="iconbtn" id="dbGear" aria-label="Build-to targets">⚙︎</button>`;
+    elView.className="";
+
+    if(!hasAnyBuildTo()){
+      elView.innerHTML=`
+        <div class="db-empty">
+          <p>No build-to targets set yet.</p>
+          <button class="btn primary" id="dbSetup">Set your build-to targets</button>
+        </div>`;
+      elFooter.innerHTML="";
+      document.getElementById("dbHome").onclick=openHome;
+      document.getElementById("dbGear").onclick=()=>go("editor");
+      document.getElementById("dbSetup").onclick=()=>go("editor");
+      return;
+    }
+
+    const cards = SIZES.map(([k,chip,name])=>{
+      const [cls,txt]=readParts(k);
+      return `
+      <div class="db-card" data-k="${k}">
+        <div class="db-head">
+          <div class="db-name"><b>${esc(name)}</b><span class="db-chip">${esc(chip)}</span></div>
+          <div class="db-read ${cls}">${esc(txt)}</div>
+        </div>
+        ${stepperHTML(onHand[k], "trays on hand")}
+        <div class="db-hint">to ${esc(fmtHalf(state.buildTo[k]))} · have ${esc(fmtHalf(onHand[k]))}</div>
+      </div>`;
+    }).join("");
+
+    elView.innerHTML=`
+      <div class="bigtot">
+        <div class="lbl">Total to build</div>
+        <div class="v"><span id="dbTotal">${esc(fmtHalf(totalToBuild()))}</span></div>
+        <div class="u">trays</div>
+        <div class="u" id="dbSub"></div>
+      </div>
+      ${cards}`;
+    refreshSummary();
+
+    SIZES.forEach(([k])=>{
+      const card=elView.querySelector(`.db-card[data-k="${k}"]`);
+      const numEl=card.querySelector(".num");
+      const readEl=card.querySelector(".db-read");
+      const hintEl=card.querySelector(".db-hint");
+      function cur(){ return Number(onHand[k])||0; }
+      function set(v){
+        onHand[k]=clampHalf(v);
+        numEl.textContent=fmtHalf(onHand[k]);
+        paintRead(readEl,k);
+        hintEl.textContent=`to ${fmtHalf(state.buildTo[k])} · have ${fmtHalf(onHand[k])}`;
+        refreshSummary();
+      }
+      const minus=card.querySelector(".minus"), plus=card.querySelector(".plus");
+      minus.onclick=()=>set(cur()-0.5);
+      plus.onclick=()=>set(cur()+0.5);
+      attachRepeat(minus,()=>set(cur()-0.5));
+      attachRepeat(plus,()=>set(cur()+0.5));
+    });
+
+    elFooter.innerHTML=`<div class="btn-row"><button class="btn ghost" id="dbClear">Clear counts</button></div>`;
+    document.getElementById("dbClear").onclick=()=>{ onHand=blank(); render(); toast("Counts cleared"); };
+    document.getElementById("dbHome").onclick=openHome;
+    document.getElementById("dbGear").onclick=()=>go("editor");
+  }
+
+  /* ---------- View B: build-to editor ---------- */
+  function renderEditor(){
+    elBar.innerHTML=`
+      ${homeBtnHTML("dbHome")}
+      <h1>Dough Build <span class="sub">Build-to targets</span></h1>`;
+    elView.className="";
+
+    const rows = SIZES.map(([k,chip,name])=>`
+      <div class="db-card" data-k="${k}">
+        <div class="db-head"><div class="db-name"><b>${esc(name)}</b><span class="db-chip">${esc(chip)}</span></div></div>
+        ${stepperHTML(state.buildTo[k], "trays to build to")}
+      </div>`).join("");
+    elView.innerHTML = rows;
+
+    SIZES.forEach(([k])=>{
+      const card=elView.querySelector(`.db-card[data-k="${k}"]`);
+      const numEl=card.querySelector(".num");
+      function cur(){ return Number(state.buildTo[k])||0; }
+      function set(v){ state.buildTo[k]=clampHalf(v); save(); numEl.textContent=fmtHalf(state.buildTo[k]); }
+      const minus=card.querySelector(".minus"), plus=card.querySelector(".plus");
+      minus.onclick=()=>set(cur()-0.5);
+      plus.onclick=()=>set(cur()+0.5);
+      attachRepeat(minus,()=>set(cur()-0.5));
+      attachRepeat(plus,()=>set(cur()+0.5));
+    });
+
+    elFooter.innerHTML=`<div class="btn-row"><button class="btn primary" id="dbSave">Save</button></div>`;
+    document.getElementById("dbSave").onclick=()=>{ save(); go("counter"); toast("Saved"); };
+    document.getElementById("dbHome").onclick=openHome;
+  }
+
+  /* ---------- Self-test (core math + half formatting) ---------- */
+  function _selftest(){
+    const savedBT=state.buildTo, savedOH=onHand;
+    try{
+      state.buildTo={jr:0,sm:0,md:3,lg:4,xl:2};
+      onHand       ={jr:0,sm:0,md:3,lg:1.5,xl:3.5};
+      const approx=(a,b)=>Math.abs(a-b)<1e-9;
+      const checks=[
+        ["needed Build (lg)",  needed("lg"),  2.5],
+        ["needed Set (md)",    needed("md"),  0],
+        ["needed Over (xl)",   needed("xl"), -1.5],
+        ["total positive-only",totalToBuild(),2.5],
+        ["fmtHalf 2.5", fmtHalf(2.5)==="2½"?1:0, 1],
+        ["fmtHalf 3",   fmtHalf(3)==="3"?1:0,   1],
+        ["fmtHalf 0.5", fmtHalf(0.5)==="½"?1:0, 1],
+      ];
+      let ok=true;
+      for(const [name,got,exp] of checks){
+        if(!approx(got,exp)){ ok=false; console.error(`DoughBuild calc FAIL: ${name} -> ${got}, expected ${exp}`); }
+      }
+      if(ok) console.log("DoughBuild calc self-test: "+checks.length+"/"+checks.length+" OK");
+      return ok;
+    } finally { state.buildTo=savedBT; onHand=savedOH; }
+  }
+  try{ _selftest(); }catch(e){}
+
+  return { STORE, render, reset, reload, _selftest };
+})();
+
 const TOOL_VIEWS = {
   nightlyInventory: ()=>Inv.render(),
   drawerCash: ()=>DrawerCash.render(),
   scheduleMaker: ()=>Sched.render(),
   nightlyNumbers: ()=>Numbers.render(),
+  doughBuild: ()=>DoughBuild.render(),
 };
 
 /* ====================================================================

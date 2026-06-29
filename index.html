@@ -741,6 +741,25 @@
   .db-card .nfval .tap{text-transform:none;letter-spacing:0;}
   .db-hint{text-align:right;color:var(--muted);font-size:12px;margin-top:7px;
     font-variant-numeric:tabular-nums;}
+  .db-img{width:46px;height:46px;border-radius:10px;object-fit:cover;flex:none;}
+  .db-nm{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .db-nmrow{display:flex;align-items:baseline;gap:8px;}
+  .db-oz{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+  /* Build To header link + 1×/½ step toggle (mirrors inventory) */
+  .db-toplink{height:40px;padding:0 13px;border-radius:10px;background:var(--panel2);
+    border:1px solid var(--line);font-weight:700;font-size:13px;display:flex;
+    align-items:center;flex:none;}
+  .db-toplink:active{background:var(--tap);}
+  /* Day selector */
+  .db-days{display:flex;gap:6px;overflow-x:auto;margin:12px 0;padding-bottom:2px;
+    -ms-overflow-style:none;scrollbar-width:none;}
+  .db-days::-webkit-scrollbar{display:none;}
+  .db-day{flex:none;padding:8px 13px;border-radius:10px;background:var(--panel2);
+    border:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink);
+    position:relative;}
+  .db-day:active{background:var(--tap);}
+  .db-day.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .db-day.today:not(.on){border-color:var(--accent2);}
 </style>
 </head>
 <body>
@@ -930,8 +949,8 @@ function renderGlobalSettings(){
   });
   document.getElementById("resetApp").onclick=()=>{
     if(confirm("Reset the whole app? This erases ALL data on this device for every tool, including inventory counts. This cannot be undone.")){
-      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); localStorage.removeItem(Sched.STORE); localStorage.removeItem(DoughBuild.STORE); }catch(e){}
-      shell=loadShell(); Inv.reload(); DrawerCash.reload(); Sched.reload(); DoughBuild.reload();
+      try{ localStorage.removeItem(SHELL_STORE); localStorage.removeItem(Inv.STORE); localStorage.removeItem(DrawerCash.STORE); localStorage.removeItem(Sched.STORE); localStorage.removeItem(Numbers.STORE); localStorage.removeItem(DoughBuild.STORE); }catch(e){}
+      shell=loadShell(); Inv.reload(); DrawerCash.reload(); Sched.reload(); Numbers.reload(); DoughBuild.reload();
       toast("App reset"); openHome();
     }
   };
@@ -3856,31 +3875,50 @@ const Numbers = (function(){
    ==================================================================== */
 const DoughBuild = (function(){
   const STORE = "howiehelper.doughBuild.v1";
-  // [code, chip, full name] — fixed order Jr → Xl.
-  const SIZES = [["jr","Jr","Junior"],["sm","Sm","Small"],["md","Md","Medium"],
-                 ["lg","Lg","Large"],["xl","Xl","X-Large"]];
+  // [code, chip, full name, ballOz] — fixed order Jr → Xl. Ball weight is fixed reference.
+  const SIZES = [["jr","Jr","Junior",6],["sm","Sm","Small",9],["md","Md","Medium",14],
+                 ["lg","Lg","Large",18],["xl","Xl","X-Large",27]];
+  const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];   // index 0=Mon..6=Sun
+  const todayIdx = () => (new Date().getDay()+6)%7;            // JS Sun=0..Sat=6 → Mon=0..Sun=6
+  const overlayRoot = document.getElementById("overlayRoot");
 
   /* ---------- State + persistence ---------- */
-  function blank(){ return {jr:0,sm:0,md:0,lg:0,xl:0}; }
+  function clampHalf(v){ v=Math.round((Number(v)||0)*2)/2; return v<0?0:v; }
+  function blankDay(){ return {jr:0,sm:0,md:0,lg:0,xl:0}; }
+  function blankWeek(){ const w={}; for(let d=0; d<7; d++) w[d]=blankDay(); return w; }
+  function sanitizeDay(src){
+    const o=blankDay();
+    if(src && typeof src==="object") SIZES.forEach(([k])=>{ o[k]=clampHalf(src[k]); });
+    return o;
+  }
   function load(){
     let s=null; try{ s=JSON.parse(localStorage.getItem(STORE)||"null"); }catch(e){ s=null; }
-    const bt=blank();
+    const week=blankWeek(); let halfStep=false;
     if(s && typeof s==="object" && s.buildTo && typeof s.buildTo==="object"){
-      SIZES.forEach(([k])=>{ const v=Number(s.buildTo[k]); bt[k]=(isFinite(v)&&v>0)?Math.round(v*2)/2:0; });
+      if("jr" in s.buildTo){                       // old flat v1 → apply the one set to every day
+        const one=sanitizeDay(s.buildTo);
+        for(let d=0; d<7; d++) week[d]={...one};
+      } else {                                      // per-weekday
+        for(let d=0; d<7; d++) week[d]=sanitizeDay(s.buildTo[d]);
+      }
+      halfStep=!!s.halfStep;
     }
-    return { buildTo: bt };
+    return { buildTo: week, halfStep };
   }
   let state = load();
-  let onHand = blank();                  // live only — never persisted, reset on reload/Clear
-  // Persist ONLY the build-to targets. onHand is intentionally excluded.
-  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({buildTo: state.buildTo})); }catch(e){} }
+  let onHand = blankDay();                // live only — never persisted, reset on reload/Clear
+  let selectedDay = todayIdx();           // live — counter uses this day's targets (defaults to today)
+  let editorDay   = todayIdx();           // live — which day the editor edits
+  // Persist ONLY build-to targets + the step preference. onHand is intentionally excluded.
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({buildTo: state.buildTo, halfStep: state.halfStep})); }catch(e){} }
+  function step(){ return state.halfStep ? 0.5 : 1; }   // default 1×, toggle ½
 
   /* ---------- Math + formatting ---------- */
-  function clampHalf(v){ v=Math.round((Number(v)||0)*2)/2; return v<0?0:v; }
-  function needed(k){ return (Number(state.buildTo[k])||0) - (Number(onHand[k])||0); } // can be negative
+  function bt(k){ return Number(state.buildTo[selectedDay][k])||0; }   // build-to for the selected day
+  function needed(k){ return bt(k) - (Number(onHand[k])||0); } // can be negative
   function totalToBuild(){ let t=0; SIZES.forEach(([k])=>{ const n=needed(k); if(n>0) t+=n; }); return t; }
   function overCount(){ let c=0; SIZES.forEach(([k])=>{ if(needed(k)<-1e-9) c++; }); return c; }
-  function hasAnyBuildTo(){ return SIZES.some(([k])=>(Number(state.buildTo[k])||0)>0); }
+  function hasAnyBuildTo(){ for(let d=0; d<7; d++){ for(const [k] of SIZES){ if((Number(state.buildTo[d][k])||0)>0) return true; } } return false; }
   // 2.5 → "2½", 3 → "3", 0.5 → "½", 0 → "0".
   function fmtHalf(n){
     n=Number(n)||0; const neg=n<0; n=Math.abs(n);
@@ -3899,11 +3937,70 @@ const DoughBuild = (function(){
     btn.addEventListener("mousedown",start); btn.addEventListener("mouseup",stop); btn.addEventListener("mouseleave",stop);
   }
 
+  // Tap-to-type numpad — mirror of DrawerCash's self-contained pad (IIFE-private there).
+  function openNumpad(label, startVal, onDone){
+    let buf = (startVal!=null && Number(startVal)!==0) ? String(startVal) : "";
+    let fresh = buf!=="";          // seeded so a stray dismiss keeps the value; first keypress replaces it
+    const disp = () => buf===""? "0" : buf;
+    const keys = ["1","2","3","4","5","6","7","8","9",".","0","⌫"];
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="dbov">
+        <div class="pad">
+          <div class="padhead"><div class="l">${esc(label)}</div></div>
+          <div class="paddisp" id="dbdisp">${esc(disp())}</div>
+          <div class="grid">
+            ${keys.map(k=>`<button class="key ${k==='⌫'?'clr':''}" data-k="${k}">${k}</button>`).join("")}
+          </div>
+          <div class="grid" style="grid-template-columns:1fr 2fr;margin-top:9px;">
+            <button class="key clr" data-k="ALLCLR">Clear</button>
+            <button class="key done" data-k="DONE">Done</button>
+          </div>
+        </div>
+      </div>`;
+    const dispEl=document.getElementById("dbdisp");
+    function upd(){ dispEl.textContent=disp(); }
+    function press(k){
+      if(k==="DONE"){ close(Number(buf||"0")); return; }
+      if(k==="ALLCLR"){ buf=""; fresh=false; upd(); return; }
+      if(k==="⌫"){ if(fresh){ buf=""; fresh=false; } else buf=buf.slice(0,-1); upd(); return; }
+      if(k==="."){ if(fresh){ buf=""; fresh=false; } if(buf.includes(".")) return; if(buf==="") buf="0"; buf+="."; upd(); return; }
+      if(fresh){ buf=""; fresh=false; }
+      if(buf==="0") buf="";
+      if(buf.replace(".","").length>=5) return;
+      buf+=k; upd();
+    }
+    overlayRoot.querySelectorAll(".key").forEach(b=> b.onclick=()=>press(b.getAttribute("data-k")) );
+    document.getElementById("dbov").onclick=e=>{ if(e.target.id==="dbov") close(Number(buf||"0")); };
+    function close(v){ overlayRoot.innerHTML=""; onDone(clampHalf(isNaN(v)?0:v)); }
+  }
+
+  /* ---------- Header + day-bar helpers ---------- */
+  function stepToggleHTML(){
+    return `<button class="iconbtn ${state.halfStep?'on':''}" id="dbStep" aria-label="Step size" aria-pressed="${state.halfStep}">${state.halfStep?'½':'1×'}</button>`;
+  }
+  function toggleStep(){ state.halfStep=!state.halfStep; save(); render(); }
+  function dayBarHTML(sel){
+    const t=todayIdx();
+    return `<div class="db-days" id="dbDays">${DAYS.map((d,i)=>
+      `<button class="db-day ${i===sel?'on':''} ${i===t?'today':''}" data-d="${i}">${d}</button>`).join("")}</div>`;
+  }
+  function wireDayBar(onPick){
+    const bar=document.getElementById("dbDays"); if(!bar) return;
+    bar.querySelectorAll(".db-day").forEach(b=>{ b.onclick=()=>onPick(Number(b.getAttribute("data-d"))); });
+  }
+  function sizeImgNameHTML(k,chip,name,oz){
+    return `<div class="db-name">
+        <img class="db-img" src="img/dough-${k}.png" alt="" onerror="this.remove()">
+        <div class="db-nm"><div class="db-nmrow"><b>${esc(name)}</b><span class="db-chip">${esc(chip)}</span></div>
+          <div class="db-oz">ball ${oz} oz</div></div>
+      </div>`;
+  }
+
   /* ---------- Router ---------- */
   let route={ name:"counter" };
   function go(name){ route={name}; render(); window.scrollTo(0,0); }
   function reset(){ route={name:"counter"}; }
-  function reload(){ state=load(); onHand=blank(); route={name:"counter"}; }
+  function reload(){ state=load(); onHand=blankDay(); selectedDay=editorDay=todayIdx(); route={name:"counter"}; }
   function render(){ if(route.name==="editor") renderEditor(); else renderCounter(); }
 
   /* ---------- Shared stepper markup (reuses .nf inventory stepper styles) ---------- */
@@ -3935,8 +4032,9 @@ const DoughBuild = (function(){
   function renderCounter(){
     elBar.innerHTML=`
       ${homeBtnHTML("dbHome")}
-      <h1>Dough Build <span class="sub">Morning build</span></h1>
-      <button class="iconbtn" id="dbGear" aria-label="Build-to targets">⚙︎</button>`;
+      <h1>Dough Build <span class="sub">${DAYS[selectedDay]}</span></h1>
+      ${stepToggleHTML()}
+      <button class="db-toplink" id="dbBuildTo">Build To</button>`;
     elView.className="";
 
     if(!hasAnyBuildTo()){
@@ -3947,25 +4045,27 @@ const DoughBuild = (function(){
         </div>`;
       elFooter.innerHTML="";
       document.getElementById("dbHome").onclick=openHome;
-      document.getElementById("dbGear").onclick=()=>go("editor");
-      document.getElementById("dbSetup").onclick=()=>go("editor");
+      document.getElementById("dbStep").onclick=toggleStep;
+      document.getElementById("dbBuildTo").onclick=()=>{ editorDay=selectedDay; go("editor"); };
+      document.getElementById("dbSetup").onclick=()=>{ editorDay=selectedDay; go("editor"); };
       return;
     }
 
-    const cards = SIZES.map(([k,chip,name])=>{
+    const cards = SIZES.map(([k,chip,name,oz])=>{
       const [cls,txt]=readParts(k);
       return `
       <div class="db-card" data-k="${k}">
         <div class="db-head">
-          <div class="db-name"><b>${esc(name)}</b><span class="db-chip">${esc(chip)}</span></div>
+          ${sizeImgNameHTML(k,chip,name,oz)}
           <div class="db-read ${cls}">${esc(txt)}</div>
         </div>
-        ${stepperHTML(onHand[k], "trays on hand")}
-        <div class="db-hint">to ${esc(fmtHalf(state.buildTo[k]))} · have ${esc(fmtHalf(onHand[k]))}</div>
+        ${stepperHTML(onHand[k], "tap to type")}
+        <div class="db-hint">to ${esc(fmtHalf(bt(k)))} · have ${esc(fmtHalf(onHand[k]))}</div>
       </div>`;
     }).join("");
 
     elView.innerHTML=`
+      ${dayBarHTML(selectedDay)}
       <div class="bigtot">
         <div class="lbl">Total to build</div>
         <div class="v"><span id="dbTotal">${esc(fmtHalf(totalToBuild()))}</span></div>
@@ -3974,8 +4074,9 @@ const DoughBuild = (function(){
       </div>
       ${cards}`;
     refreshSummary();
+    wireDayBar(d=>{ selectedDay=d; renderCounter(); });   // switching day keeps on-hand counts
 
-    SIZES.forEach(([k])=>{
+    SIZES.forEach(([k,,name])=>{
       const card=elView.querySelector(`.db-card[data-k="${k}"]`);
       const numEl=card.querySelector(".num");
       const readEl=card.querySelector(".db-read");
@@ -3985,65 +4086,83 @@ const DoughBuild = (function(){
         onHand[k]=clampHalf(v);
         numEl.textContent=fmtHalf(onHand[k]);
         paintRead(readEl,k);
-        hintEl.textContent=`to ${fmtHalf(state.buildTo[k])} · have ${fmtHalf(onHand[k])}`;
+        hintEl.textContent=`to ${fmtHalf(bt(k))} · have ${fmtHalf(onHand[k])}`;
         refreshSummary();
       }
       const minus=card.querySelector(".minus"), plus=card.querySelector(".plus");
-      minus.onclick=()=>set(cur()-0.5);
-      plus.onclick=()=>set(cur()+0.5);
-      attachRepeat(minus,()=>set(cur()-0.5));
-      attachRepeat(plus,()=>set(cur()+0.5));
+      minus.onclick=()=>set(cur()-step());
+      plus.onclick=()=>set(cur()+step());
+      attachRepeat(minus,()=>set(cur()-step()));
+      attachRepeat(plus,()=>set(cur()+step()));
+      card.querySelector(".nfval").onclick=()=>openNumpad(name+" — trays on hand", cur(), v=>set(v));
     });
 
     elFooter.innerHTML=`<div class="btn-row"><button class="btn ghost" id="dbClear">Clear counts</button></div>`;
-    document.getElementById("dbClear").onclick=()=>{ onHand=blank(); render(); toast("Counts cleared"); };
+    document.getElementById("dbClear").onclick=()=>{ onHand=blankDay(); renderCounter(); toast("Counts cleared"); };
     document.getElementById("dbHome").onclick=openHome;
-    document.getElementById("dbGear").onclick=()=>go("editor");
+    document.getElementById("dbStep").onclick=toggleStep;
+    document.getElementById("dbBuildTo").onclick=()=>{ editorDay=selectedDay; go("editor"); };
   }
 
-  /* ---------- View B: build-to editor ---------- */
+  /* ---------- View B: build-to editor (per weekday) ---------- */
   function renderEditor(){
     elBar.innerHTML=`
       ${homeBtnHTML("dbHome")}
-      <h1>Dough Build <span class="sub">Build-to targets</span></h1>`;
+      <h1>Dough Build <span class="sub">Build to · ${DAYS[editorDay]}</span></h1>
+      ${stepToggleHTML()}`;
     elView.className="";
 
-    const rows = SIZES.map(([k,chip,name])=>`
+    const rows = SIZES.map(([k,chip,name,oz])=>`
       <div class="db-card" data-k="${k}">
-        <div class="db-head"><div class="db-name"><b>${esc(name)}</b><span class="db-chip">${esc(chip)}</span></div></div>
-        ${stepperHTML(state.buildTo[k], "trays to build to")}
+        <div class="db-head">${sizeImgNameHTML(k,chip,name,oz)}</div>
+        ${stepperHTML(state.buildTo[editorDay][k], "tap to type")}
       </div>`).join("");
-    elView.innerHTML = rows;
+    elView.innerHTML = dayBarHTML(editorDay) + rows;
+    wireDayBar(d=>{ editorDay=d; renderEditor(); });
 
-    SIZES.forEach(([k])=>{
+    SIZES.forEach(([k,,name])=>{
       const card=elView.querySelector(`.db-card[data-k="${k}"]`);
       const numEl=card.querySelector(".num");
-      function cur(){ return Number(state.buildTo[k])||0; }
-      function set(v){ state.buildTo[k]=clampHalf(v); save(); numEl.textContent=fmtHalf(state.buildTo[k]); }
+      function cur(){ return Number(state.buildTo[editorDay][k])||0; }
+      function set(v){ state.buildTo[editorDay][k]=clampHalf(v); save(); numEl.textContent=fmtHalf(state.buildTo[editorDay][k]); }
       const minus=card.querySelector(".minus"), plus=card.querySelector(".plus");
-      minus.onclick=()=>set(cur()-0.5);
-      plus.onclick=()=>set(cur()+0.5);
-      attachRepeat(minus,()=>set(cur()-0.5));
-      attachRepeat(plus,()=>set(cur()+0.5));
+      minus.onclick=()=>set(cur()-step());
+      plus.onclick=()=>set(cur()+step());
+      attachRepeat(minus,()=>set(cur()-step()));
+      attachRepeat(plus,()=>set(cur()+step()));
+      card.querySelector(".nfval").onclick=()=>openNumpad(name+" — build to", cur(), v=>set(v));
     });
 
     elFooter.innerHTML=`<div class="btn-row"><button class="btn primary" id="dbSave">Save</button></div>`;
     document.getElementById("dbSave").onclick=()=>{ save(); go("counter"); toast("Saved"); };
     document.getElementById("dbHome").onclick=openHome;
+    document.getElementById("dbStep").onclick=toggleStep;
   }
 
-  /* ---------- Self-test (core math + half formatting) ---------- */
+  /* ---------- Self-test (per-day math, step, migration, half formatting) ---------- */
   function _selftest(){
-    const savedBT=state.buildTo, savedOH=onHand;
+    const savedBT=state.buildTo, savedOH=onHand, savedSel=selectedDay, savedHS=state.halfStep;
     try{
-      state.buildTo={jr:0,sm:0,md:3,lg:4,xl:2};
-      onHand       ={jr:0,sm:0,md:3,lg:1.5,xl:3.5};
+      state.buildTo=blankWeek();
+      state.buildTo[2]={jr:0,sm:0,md:3,lg:4,xl:2};   // Wed
+      state.buildTo[5]={jr:0,sm:0,md:0,lg:1,xl:0};   // Sat
+      onHand={jr:0,sm:0,md:3,lg:1.5,xl:3.5};
+      selectedDay=2;
       const approx=(a,b)=>Math.abs(a-b)<1e-9;
+      // migration: old flat shape → every day equals it
+      const mig=(function(){ const one=sanitizeDay({jr:1,sm:0,md:2,lg:0,xl:0.5});
+        const w=blankWeek(); for(let d=0;d<7;d++) w[d]={...one};
+        return w[0].xl===0.5 && w[6].md===2 && w[3].jr===1; })();
+      state.halfStep=false; const s1=step(); state.halfStep=true; const s2=step();
       const checks=[
-        ["needed Build (lg)",  needed("lg"),  2.5],
-        ["needed Set (md)",    needed("md"),  0],
-        ["needed Over (xl)",   needed("xl"), -1.5],
-        ["total positive-only",totalToBuild(),2.5],
+        ["needed Build Wed (lg)", needed("lg"),  2.5],
+        ["needed Set Wed (md)",   needed("md"),  0],
+        ["needed Over Wed (xl)",  needed("xl"), -1.5],
+        ["total positive-only",   totalToBuild(),2.5],
+        ["day switch Sat (lg)",   (function(){ selectedDay=5; const n=needed("lg"); selectedDay=2; return n; })(), -0.5],
+        ["step 1×",   s1, 1],
+        ["step ½",    s2, 0.5],
+        ["migration flat→week", mig?1:0, 1],
         ["fmtHalf 2.5", fmtHalf(2.5)==="2½"?1:0, 1],
         ["fmtHalf 3",   fmtHalf(3)==="3"?1:0,   1],
         ["fmtHalf 0.5", fmtHalf(0.5)==="½"?1:0, 1],
@@ -4054,7 +4173,7 @@ const DoughBuild = (function(){
       }
       if(ok) console.log("DoughBuild calc self-test: "+checks.length+"/"+checks.length+" OK");
       return ok;
-    } finally { state.buildTo=savedBT; onHand=savedOH; }
+    } finally { state.buildTo=savedBT; onHand=savedOH; selectedDay=savedSel; state.halfStep=savedHS; }
   }
   try{ _selftest(); }catch(e){}
 

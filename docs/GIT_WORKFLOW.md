@@ -1,27 +1,33 @@
 # Howie Helper — Git Workflow
 
-A simple, repeatable git workflow for solo work with Claude Code, set up so other
+A simple, repeatable git workflow for work with Claude Code, set up so other
 people can use the live app without you disturbing them while you work. You don't
 run git commands yourself — you tell Claude Code what you want and it runs them.
 This doc is the playbook so the steps stay consistent.
+
+> **⛔ The one hard rule: nothing crosses into `main` or `stable` except through a
+> Pull Request that Charlie reviews and merges on GitHub.** Claude Code never runs
+> a local `git merge` into `main`/`stable` and never pushes directly to them. It
+> works on a feature/fix branch, pushes that branch, and opens a PR.
 
 ## The big picture (three layers)
 
 - **`stable` = what people actually use.** GitHub Pages deploys the `stable`
   branch. This is the version running on everyone's phone. It **only** changes
-  when you deliberately cut a release — so you can tinker all day without
-  affecting anyone mid-shift.
+  when a release PR is merged — so you can tinker all day without affecting anyone
+  mid-shift.
 - **`main` = your working/integration version.** Finished, tested features land
-  here. It's your "next release in progress." Not live until you promote it.
+  here **via PR**. It's your "next release in progress." Not live until you
+  promote it.
 - **Feature branches = your workbench.** Every new tool or change happens on its
   own branch off `main`. Experiment freely; if it breaks, nothing downstream is
   touched.
 
 ```
-stable (LIVE — what people run) ──●───────────────────●────▶  (changes only on release)
-                                   ▲  promote when ready ▲
+stable (LIVE — what people run) ──●───────────────────●────▶  (changes only when a release PR merges)
+                                   ▲  release PR ───────▲
 main (your dev version) ──●────────●──────────●─────────●──▶
-                           \      /  merge when a feature is done
+                           \      /  PR merged when a feature is done
    feature/...      ●──●──●─●    (build + test here)
 ```
 
@@ -36,21 +42,24 @@ For each new tool or change:
    → `feature/prep-tracker`.
 2. **Build + commit.** "Build it per the spec, committing as you go."
 3. **Test it.** "Serve it locally so I can try it on my phone."
-4. **Merge into main.** "Looks good — merge this into main." (Still not live.)
-5. **Clean up.** "Delete the branch."
+4. **Push + open a PR into main.** "Looks good — push it and open a PR into main."
+   → Charlie reviews and merges on GitHub. (Still not live.)
+5. **Clean up.** "Delete the branch." (After the PR is merged.)
 
 You can repeat this as much as you want. None of it reaches other users yet —
-they're on `stable`.
+they're on `stable`. And nothing lands on `main` until Charlie merges the PR.
 
 ## Releasing (making it live for everyone)
 
 When `main` is in a state you're happy to put in front of people:
 
-> "Promote main to stable and push." (a.k.a. "cut a release")
+> "Open a release PR from main into stable." (a.k.a. "cut a release")
 
-→ Claude Code merges `main` into `stable`; GitHub Pages redeploys; within a minute
-everyone's app updates. This is the **only** moment the live version changes, and
-it's always deliberate.
+→ Claude Code pushes and opens a PR from `main` into `stable`; Charlie reviews and
+merges it on GitHub; GitHub Pages redeploys; within a minute everyone's app
+updates. This is the **only** moment the live version changes, and it's always
+deliberate. (No local merge into `stable`, no direct push — the release is the
+merged PR.)
 
 Tip: cut a release at a calm time (not mid-rush), so if anything looks off you
 have room to fix it.
@@ -76,14 +85,15 @@ Lots of small commits beat one giant one — easier to undo.
 
 "Push" copies commits up to GitHub. Push often — at least when you stop for the
 day. Pushed = backed up off your computer. A good habit: "commit and push" when
-wrapping up. (Pushing `main` or a feature branch does **not** change what users
-run — only a release to `stable` does.)
+wrapping up. (Pushing your feature branch does **not** change what users run —
+only a merged release PR into `stable` does.)
 
 ## If a release goes wrong
 
-Because users are on `stable`, a bad release is fixable fast:
+Because users are on `stable`, a bad release is fixable fast. On GitHub, Charlie
+can **revert the release PR** (or merge a quick revert PR):
 
-> "Revert the last release on stable and push."
+> "Open a PR to revert the last release on stable."
 
 → Rolls the live version back to the previous good one while you sort out the fix
 on `main`. Nobody's stuck on a broken version.
@@ -95,7 +105,8 @@ Handy things to ask Claude Code anytime:
 - "What branch am I on / what's the status?"
 - "Show me what changed."
 - "Undo my uncommitted changes."
-- "Revert the last commit / merge / release."
+- "Revert the last commit on this branch." (Reverting something already merged into
+  `main`/`stable` goes through a revert PR Charlie merges.)
 
 ## First-time setup (one time — ask Claude Code)
 

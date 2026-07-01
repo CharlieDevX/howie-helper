@@ -381,6 +381,9 @@
     /* Schedule printable: keep black section bands, grey calc/Total shading in print/PDF */
     body.hh-printing #hhPrintHost.schp tr.band td,body.hh-printing #hhPrintHost.schp tr.calc td,
     body.hh-printing #hhPrintHost.schp td.ptot,body.hh-printing #hhPrintHost.schp td.off{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    /* Dough Build printable: keep over-cell, today-column, total shading in print/PDF */
+    body.hh-printing #hhPrintHost.dbp td.over,body.hh-printing #hhPrintHost.dbp td.today,
+    body.hh-printing #hhPrintHost.dbp td.tt,body.hh-printing #hhPrintHost.dbp tr.tot td{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
   /* ---------- Schedule Maker ---------- */
@@ -720,6 +723,131 @@
   .schp.portrait tr.band td{ font-size:9.5px; letter-spacing:.4px; padding:2px 5px; }
   .schp.portrait tr.note td{ font-size:9px; }
   .schp.portrait .ft{ margin-top:8px; padding-top:7px; font-size:9px; gap:12px; }
+
+  /* ==================================================================
+     Dough Build export — ported from the locked mockups, scoped under
+     .dbx (shareable / branded) and .dbp (printable / simple) so the
+     mockups' bare selectors can't clobber the app or other exports.
+     Today = portrait (8.5×11in), Week = landscape (11×8.5in).
+     ================================================================== */
+  .dbx{ --red:#C8102E; --red-dk:#8a1015; --gold:#FFC72C; --cream:#FFF6E5; --ink:#1f1c1a;
+        --muted:#8a8a8a; --calc:#FFF7E2; --calcline:#ecd9a8; --line:#dcdcdc; --future:#f7f7f7;
+        --good:#1c7d3e; --bad:#c0202e; --amber:#b5730a;
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+  .dbx .page{ background:#fff; overflow:hidden; display:flex; flex-direction:column; box-sizing:border-box; }
+  .dbx .page *{ box-sizing:border-box; }
+  .dbx.today .page,.dbp.today .page{ width:8.5in; height:11in; }
+  .dbx.week .page,.dbp.week .page{ width:11in; height:8.5in; }
+  /* dough thumbnails (production art, replacing the mockup's placeholder badge) */
+  .dbx .dgh-img,.dbp .dgh-img{ width:46px; height:46px; border-radius:11px; object-fit:cover; flex:none; }
+
+  /* ---- branded head (red) ---- */
+  .dbx .head{ background:var(--red); padding:22px 30px; display:flex; align-items:center; justify-content:space-between; }
+  .dbx .brandbox{ display:flex; align-items:center; gap:14px; }
+  .dbx .logo{ width:52px; height:52px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:30px; }
+  .dbx .name{ color:#fff; font-size:26px; font-weight:800; line-height:1.05; }
+  .dbx .sub{ color:var(--gold); font-size:13.5px; font-weight:700; letter-spacing:.6px; }
+  .dbx .meta{ text-align:right; color:#fff; }
+  .dbx .meta .d{ font-size:18px; font-weight:700; }
+  .dbx .meta .by{ font-size:13px; color:#f6d9a0; }
+  .dbx .strip{ background:var(--cream); padding:13px 30px; display:flex; justify-content:space-between; align-items:center; color:#6b5a2e; border-bottom:1px solid rgba(0,0,0,.06); }
+  .dbx .kpis{ display:flex; gap:34px; }
+  .dbx .kpi b{ display:block; font-size:23px; font-weight:800; color:var(--red-dk); line-height:1.1; }
+  .dbx .kpi span{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:#9a8854; }
+  .dbx .prog{ font-size:13.5px; font-weight:600; text-align:right; max-width:360px; }
+  .dbx .body{ padding:0 30px; flex:1; display:flex; }
+  .dbx .notes{ padding:11px 30px; font-size:11.5px; color:#7a7a7a; display:flex; gap:26px; flex-wrap:wrap; border-top:1px dashed #e0e0e0; }
+  .dbx .notes b{ color:#555; }
+  .dbx .foot{ background:#1a1a1a; color:#cfcfcf; font-size:12px; padding:12px 30px; display:flex; justify-content:space-between; align-items:center; }
+  .dbx .legend{ display:flex; gap:16px; }
+  .dbx .legend i{ font-style:normal; display:inline-flex; align-items:center; gap:6px; }
+  .dbx .sw{ width:13px; height:13px; border-radius:3px; display:inline-block; }
+
+  /* ---- printable head (b/w) ---- */
+  .dbp{ font-family:"Helvetica Neue",Arial,sans-serif; color:#000; }
+  .dbp .page{ background:#fff; display:flex; flex-direction:column; overflow:hidden; box-sizing:border-box; }
+  .dbp .page *{ box-sizing:border-box; }
+  .dbp .hd{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2.5px solid #000; padding-bottom:9px; }
+  .dbp .t{ font-size:25px; font-weight:800; letter-spacing:.5px; }
+  .dbp .t small{ display:block; font-size:12px; font-weight:600; letter-spacing:1.5px; color:#444; margin-top:3px; }
+  .dbp .m{ text-align:right; font-size:14px; }
+  .dbp .m b{ font-size:16px; }
+  .dbp .ft{ margin-top:10px; padding-top:9px; font-size:11px; color:#222; display:flex; gap:24px; flex-wrap:wrap; border-top:1.5px solid #000; }
+  .dbp .ft b{ color:#000; }
+
+  /* =========== TODAY sheet (portrait) table =========== */
+  .dbp.today .page{ padding:38px 34px; }
+  .dbx.today .body{ align-items:flex-start; }
+  .dbx table.today-t,.dbp table.today-t{ width:100%; border-collapse:collapse; }
+  .dbx .szname,.dbp .szname{ display:flex; align-items:center; gap:12px; }
+  .dbx table.today-t{ font-size:17px; margin-top:2px; }
+  .dbx table.today-t thead th{ background:#26211f; color:#fff; font-weight:700; padding:11px 8px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; }
+  .dbx table.today-t thead th.l{ text-align:left; }
+  .dbx table.today-t thead th.r{ text-align:center; }
+  .dbx table.today-t td{ border-bottom:1px solid var(--line); padding:9px 8px; font-variant-numeric:tabular-nums; }
+  .dbx table.today-t td.szc{ padding:8px 8px; }
+  .dbx .szname .nm b{ font-size:18px; } .dbx .szname .nm .oz{ font-size:12px; color:#9a8c63; font-weight:700; }
+  .dbx table.today-t td.num{ text-align:center; font-weight:700; color:#33302e; width:120px; }
+  .dbx table.today-t td.act{ text-align:center; width:150px; }
+  .dbx .act .pill{ display:inline-block; min-width:78px; padding:6px 12px; border-radius:999px; font-weight:800; font-size:16px; }
+  .dbx .pill.build{ background:#fbedd6; color:var(--amber); }
+  .dbx .pill.over{ background:#fbe0e0; color:var(--bad); }
+  .dbx .pill.set{ background:#e3f3e8; color:var(--good); }
+  .dbx table.today-t tr.tot td{ border-top:2px solid #26211f; border-bottom:none; background:var(--cream); font-weight:800; color:var(--red-dk); padding-top:11px; }
+  .dbx table.today-t tr.tot td.szc{ color:#6b5a2e; }
+  .dbx table.today-t tr.tot td.big{ font-size:20px; }
+
+  .dbp table.today-t{ font-size:16px; margin-top:16px; }
+  .dbp table.today-t th,.dbp table.today-t td{ border:1px solid #000; padding:8px 8px; text-align:center; font-variant-numeric:tabular-nums; }
+  .dbp table.today-t thead th{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .dbp table.today-t th.l,.dbp table.today-t td.szc{ text-align:left; }
+  .dbp .szname .nm b{ font-size:16px; } .dbp .szname .nm .oz{ color:#555; font-weight:600; font-size:11px; }
+  .dbp table.today-t td.over{ background:#d6d6d6; font-weight:800; }
+  .dbp table.today-t td.act{ font-weight:800; }
+  .dbp table.today-t tr.tot td{ background:#e8e8e8; font-weight:800; }
+
+  /* =========== WEEK grid (landscape) =========== */
+  .dbp.week .page{ padding:36px 40px; }
+  .dbx table.week-t,.dbp table.week-t{ width:100%; border-collapse:collapse; table-layout:fixed; }
+  .dbx .wk-szname,.dbp .wk-szname{ display:flex; align-items:center; gap:12px; }
+  .dbx table.week-t{ height:100%; font-size:19px; }
+  .dbx .body.week-body{ padding:16px 30px 4px; }
+  .dbx table.week-t col.sz{ width:210px; } .dbx table.week-t col.tt{ width:104px; }
+  .dbx table.week-t thead th{ background:#26211f; color:#fff; font-weight:700; padding:12px 4px; font-size:15px; }
+  .dbx table.week-t thead th.l{ text-align:left; padding-left:16px; }
+  .dbx table.week-t thead th.today{ background:#3a2f16; color:var(--gold); }
+  .dbx table.week-t thead th .dn{ display:block; color:var(--gold); font-weight:800; font-size:15px; margin-top:2px; }
+  .dbx table.week-t thead th.today .dn{ color:#fff; }
+  .dbx table.week-t td{ text-align:center; padding:10px 4px; border-bottom:1px solid var(--line); border-left:1px solid var(--line); font-variant-numeric:tabular-nums; font-weight:700; color:#222; }
+  .dbx table.week-t td.szc{ text-align:left; padding-left:16px; border-left:none; }
+  .dbx table.week-t td.today{ background:#fff8e6; }
+  .dbx table.week-t td.tt{ background:var(--cream); color:var(--red-dk); font-weight:800; }
+  .dbx table.week-t td.zero{ color:#cfc9bd; font-weight:600; }
+  .dbx table.week-t tr.tot td{ border-top:2px solid #26211f; background:#26211f; color:#fff; font-weight:800; }
+  .dbx table.week-t tr.tot td.szc{ color:var(--gold); text-transform:uppercase; letter-spacing:.5px; font-size:15px; }
+  .dbx table.week-t tr.tot td.today{ background:#3a2f16; color:var(--gold); }
+  .dbx table.week-t tr.tot td.grand{ background:var(--red); color:#fff; }
+  .dbx .wk-szname .nm b{ font-size:18px; } .dbx .wk-szname .nm .oz{ display:block; font-size:12px; color:#9a8c63; font-weight:700; }
+
+  .dbp table.week-t{ height:auto; font-size:17px; margin-top:16px; }
+  .dbp table.week-t col.sz{ width:2.1in; } .dbp table.week-t col.tt{ width:0.9in; }
+  .dbp table.week-t th,.dbp table.week-t td{ border:1px solid #000; padding:9px 4px; text-align:center; font-variant-numeric:tabular-nums; }
+  .dbp table.week-t thead th{ font-size:14px; font-weight:700; }
+  .dbp table.week-t thead th .dn{ display:block; font-size:14px; font-weight:800; }
+  .dbp table.week-t th.l,.dbp table.week-t td.szc{ text-align:left; padding-left:10px; }
+  .dbp table.week-t td{ font-weight:600; }
+  .dbp table.week-t td.tt{ background:#eee; font-weight:800; }
+  .dbp table.week-t td.today{ background:#f0f0f0; }
+  .dbp table.week-t td.zero{ color:#aaa; }
+  .dbp table.week-t tr.tot td{ background:#e0e0e0; font-weight:800; }
+  .dbp .wk-szname .nm b{ font-size:15px; } .dbp .wk-szname .nm .oz{ display:block; font-size:11px; color:#555; font-weight:600; }
+
+  /* store-number field on the build-to editor */
+  .db-store{ margin:16px 2px 4px; }
+  .db-store label{ display:block; font-size:13px; color:var(--muted); margin:0 0 6px; }
+  .db-store label span{ font-size:12px; opacity:.75; }
+  .db-store input.txt{ width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+    border-radius:9px; padding:10px; font-size:15px; }
 
   /* Dough Build */
   .db-empty{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
@@ -3903,14 +4031,15 @@ const DoughBuild = (function(){
       }
       halfStep=!!s.halfStep;
     }
-    return { buildTo: week, halfStep };
+    const storeNumber = (s && typeof s.storeNumber==="string") ? s.storeNumber : "";
+    return { buildTo: week, halfStep, storeNumber };
   }
   let state = load();
   let onHand = blankDay();                // live only — never persisted, reset on reload/Clear
   let selectedDay = todayIdx();           // live — counter uses this day's targets (defaults to today)
   let editorDay   = todayIdx();           // live — which day the editor edits
   // Persist ONLY build-to targets + the step preference. onHand is intentionally excluded.
-  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({buildTo: state.buildTo, halfStep: state.halfStep})); }catch(e){} }
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({buildTo: state.buildTo, halfStep: state.halfStep, storeNumber: state.storeNumber})); }catch(e){} }
   function step(){ return state.halfStep ? 0.5 : 1; }   // default 1×, toggle ½
 
   /* ---------- Math + formatting ---------- */
@@ -4097,8 +4226,11 @@ const DoughBuild = (function(){
       card.querySelector(".nfval").onclick=()=>openNumpad(name+" — trays on hand", cur(), v=>set(v));
     });
 
-    elFooter.innerHTML=`<div class="btn-row"><button class="btn ghost" id="dbClear">Clear counts</button></div>`;
+    elFooter.innerHTML=`<div class="btn-row">
+      <button class="btn ghost" id="dbClear">Clear counts</button>
+      <button class="btn primary" id="dbExport">Export →</button></div>`;
     document.getElementById("dbClear").onclick=()=>{ onHand=blankDay(); renderCounter(); toast("Counts cleared"); };
+    document.getElementById("dbExport").onclick=openExportChooser;
     document.getElementById("dbHome").onclick=openHome;
     document.getElementById("dbStep").onclick=toggleStep;
     document.getElementById("dbBuildTo").onclick=()=>{ editorDay=selectedDay; go("editor"); };
@@ -4117,8 +4249,13 @@ const DoughBuild = (function(){
         <div class="db-head">${sizeImgNameHTML(k,chip,name,oz)}</div>
         ${stepperHTML(state.buildTo[editorDay][k], "tap to type")}
       </div>`).join("");
-    elView.innerHTML = dayBarHTML(editorDay) + rows;
+    elView.innerHTML = dayBarHTML(editorDay) + rows + `
+      <div class="db-store">
+        <label for="dbStoreNum">Store # <span>(optional · shown on exports)</span></label>
+        <input class="txt" id="dbStoreNum" inputmode="text" autocomplete="off" placeholder="84" value="${esc(state.storeNumber||'')}">
+      </div>`;
     wireDayBar(d=>{ editorDay=d; renderEditor(); });
+    document.getElementById("dbStoreNum").oninput=e=>{ state.storeNumber=e.target.value.trim(); save(); };
 
     SIZES.forEach(([k,,name])=>{
       const card=elView.querySelector(`.db-card[data-k="${k}"]`);
@@ -4139,6 +4276,326 @@ const DoughBuild = (function(){
     document.getElementById("dbStep").onclick=toggleStep;
   }
 
+  /* ==================================================================
+     Export — branded shareable image + ink-friendly printable PDF, for
+     the Today build sheet (portrait) and the Week build-to grid
+     (landscape). Helpers below are module-private copies of the ones
+     proven in Numbers/Schedule (scoped .dbx / .dbp / dbx…-prefixed ids).
+     ================================================================== */
+  const WEEKDAYS_FULL = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function mondayDate(){                       // Date at 00:00 of this week's Monday
+    const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d;
+  }
+  function dayDateInWeek(i){ const d=mondayDate(); d.setDate(d.getDate()+i); return d; } // 0=Mon..6=Sun
+  function fmtMD(d){ return (d.getMonth()+1)+"/"+d.getDate(); }
+  function weekRangeLabel(){ return fmtMD(dayDateInWeek(0))+" – "+fmtMD(dayDateInWeek(6)); }
+  function longDayLabel(i){ const d=dayDateInWeek(i); return WEEKDAYS_FULL[i]+", "+MONTHS[d.getMonth()]+" "+d.getDate(); }
+  function expStamp(){
+    const d=new Date(); let h=d.getHours(); const ap=h>=12?"PM":"AM"; h=h%12||12;
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${h}:${String(d.getMinutes()).padStart(2,"0")} ${ap}`;
+  }
+  function isoDate(d){ return d.toISOString().slice(0,10); }
+
+  let expSheet="today";   // which sheet the current export is for — drives the file name
+  function expName(ext){
+    return expSheet==="week"
+      ? `dough-build-week-${isoDate(mondayDate())}.${ext}`
+      : `dough-build-today-${isoDate(dayDateInWeek(selectedDay))}.${ext}`;
+  }
+
+  /* ---------- Data model (both sheets, presentation-ready) ---------- */
+  function exportData(){
+    const sn=(state.storeNumber||"").trim();
+    // Today (day = selectedDay) — reuse the live counter math.
+    const todayRows=SIZES.map(([k,,name,oz])=>{
+      const [status,action]=readParts(k);
+      return { code:k, name, oz, buildTo:fmtHalf(bt(k)), onHand:fmtHalf(Number(onHand[k])||0), status, action };
+    });
+    let sumBt=0,sumOh=0; SIZES.forEach(([k])=>{ sumBt+=bt(k); sumOh+=Number(onHand[k])||0; });
+    const oc=overCount();
+    const today={
+      storeNumber:sn, meta:longDayLabel(selectedDay), by:"Morning build sheet",
+      rows:todayRows,
+      totals:{ buildTo:fmtHalf(sumBt), onHand:fmtHalf(sumOh), toBuild:fmtHalf(totalToBuild()) },
+      kpis:{ toBuild:fmtHalf(totalToBuild()), buildTo:fmtHalf(sumBt), onHand:fmtHalf(sumOh) },
+      sub: oc>0 ? `${oc} size${oc>1?"s":""} overstocked` : "On target",
+      stamp:expStamp()
+    };
+    // Week — abstract per-weekday targets; dates are cosmetic (this week's Mon–Sun).
+    const ti=todayIdx(), dayTotals=[0,0,0,0,0,0,0];
+    const weekRows=SIZES.map(([k,,name,oz])=>{
+      const cells=[]; let rowTot=0;
+      for(let d=0;d<7;d++){ const v=Number(state.buildTo[d][k])||0; rowTot+=v; dayTotals[d]+=v; cells.push({ val:fmtHalf(v), zero:v<=1e-9 }); }
+      return { code:k, name, oz, cells, total:fmtHalf(rowTot) };
+    });
+    let grand=0; dayTotals.forEach(v=>grand+=v);
+    let bi=0; for(let d=1;d<7;d++){ if(dayTotals[d]>dayTotals[bi]) bi=d; }
+    const cols=[]; for(let d=0;d<7;d++) cols.push({ label:DAYS[d], date:dayDateInWeek(d).getDate(), today:d===ti });
+    const week={
+      storeNumber:sn, meta:"Week of "+weekRangeLabel(), by:"Trays to build, per size · per day",
+      cols, rows:weekRows, dayTotals:dayTotals.map(v=>fmtHalf(v)), grand:fmtHalf(grand), todayIdx:ti,
+      kpis:{ perWeek:fmtHalf(grand), busiestDay:DAYS[bi], busiestVal:fmtHalf(dayTotals[bi]), avg:fmtHalf(grand/7) },
+      stamp:expStamp()
+    };
+    return { today, week };
+  }
+
+  /* ---------- HTML builders (structure ported from the locked mockup) ---------- */
+  function doughImg(code){ return `<img class="dgh-img" src="img/dough-${code}.png" alt="" onerror="this.remove()">`; }
+
+  function todayShareableHTML(d){
+    const sn=d.storeNumber;
+    const rows=d.rows.map(r=>`
+      <tr><td class="szc"><div class="szname">${doughImg(r.code)}<div class="nm"><b>${esc(r.name)}</b><div class="oz">ball ${r.oz} oz</div></div></div></td>
+          <td class="num">${r.buildTo}</td><td class="num">${r.onHand}</td>
+          <td class="act"><span class="pill ${r.status}">${esc(r.action)}</span></td></tr>`).join("");
+    return `<div class="page">
+      <div class="head">
+        <div class="brandbox"><div class="logo">🍕</div><div>
+          <div class="name">Hungry Howie's</div><div class="sub">DOUGH BUILD${sn?" · STORE "+esc(sn):""}</div></div></div>
+        <div class="meta"><div class="d">${esc(d.meta)}</div><div class="by">${esc(d.by)}</div></div>
+      </div>
+      <div class="strip">
+        <div class="kpis">
+          <div class="kpi"><b>${d.kpis.toBuild}</b><span>Trays to build</span></div>
+          <div class="kpi"><b>${d.kpis.buildTo}</b><span>Build-to total</span></div>
+          <div class="kpi"><b>${d.kpis.onHand}</b><span>On hand</span></div>
+        </div>
+        <div class="prog">${esc(d.sub)}</div>
+      </div>
+      <div class="body">
+        <table class="today-t">
+          <thead><tr><th class="l">Size</th><th class="r">Build to</th><th class="r">On hand</th><th class="r">Build</th></tr></thead>
+          <tbody>${rows}
+            <tr class="tot"><td class="szc">Totals</td><td class="num big">${d.totals.buildTo}</td><td class="num big">${d.totals.onHand}</td><td class="act big">${d.totals.toBuild}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="notes"><span><b>Build</b> = Build-to − On hand</span><span><b>Over</b> = more on hand than target</span><span>Counts as of this morning</span></div>
+      <div class="foot">
+        <div class="legend">
+          <i><span class="sw" style="background:#fbedd6;border:1px solid #e6c281"></span>Build</i>
+          <i><span class="sw" style="background:#e3f3e8;border:1px solid #9cd3ac"></span>On target</i>
+          <i><span class="sw" style="background:#fbe0e0;border:1px solid #e6a3a3"></span>Over</i>
+        </div>
+        <span>Generated by Howie Helper · ${esc(d.stamp)}</span>
+      </div>
+    </div>`;
+  }
+
+  function todayPrintableHTML(d){
+    const sn=d.storeNumber;
+    const rows=d.rows.map(r=>{
+      const ohCls=r.status==="over"?" class=\"over\"":"";
+      return `<tr><td class="szc"><div class="szname">${doughImg(r.code)}<div class="nm"><b>${esc(r.name)}</b><div class="oz">ball ${r.oz} oz</div></div></div></td>
+          <td>${r.buildTo}</td><td${ohCls}>${r.onHand}</td><td class="act">${esc(r.action)}</td></tr>`;
+    }).join("");
+    return `<div class="page">
+      <div class="hd">
+        <div class="t">DOUGH BUILD<small>HOWIE HELPER${sn?" · STORE "+esc(sn):""}</small></div>
+        <div class="m"><b>${esc(d.meta)}</b><br>${esc(d.by)}</div>
+      </div>
+      <table class="today-t">
+        <thead><tr><th class="l">Size</th><th>Build to</th><th>On hand</th><th>Build</th></tr></thead>
+        <tbody>${rows}
+          <tr class="tot"><td class="szc">Totals</td><td>${d.totals.buildTo}</td><td>${d.totals.onHand}</td><td>${d.totals.toBuild}</td></tr>
+        </tbody>
+      </table>
+      <div class="ft"><span><b>Build</b> = Build-to − On hand</span><span><b>Shaded</b> = over target</span><span>Counts as of this morning</span></div>
+    </div>`;
+  }
+
+  function weekColgroup(d){ return `<colgroup><col class="sz">${d.cols.map(c=>`<col${c.today?' class="today"':''}>`).join("")}<col class="tt"></colgroup>`; }
+  function weekHead(d){ return `<thead><tr><th class="l">Size</th>${d.cols.map(c=>`<th${c.today?' class="today"':''}>${esc(c.label)}<span class="dn">${c.date}</span></th>`).join("")}<th>Total</th></tr></thead>`; }
+  function weekBodyRows(d){
+    return d.rows.map(r=>`
+      <tr><td class="szc"><div class="wk-szname">${doughImg(r.code)}<div class="nm"><b>${esc(r.name)}</b><span class="oz">${r.oz} oz</span></div></div></td>
+        ${r.cells.map((c,i)=>`<td class="${d.cols[i].today?'today':''}${c.zero?' zero':''}">${c.val}</td>`).join("")}<td class="tt">${r.total}</td></tr>`).join("");
+  }
+  function weekTotRow(d, grandCls){
+    return `<tr class="tot"><td class="szc">Total trays</td>${d.dayTotals.map((v,i)=>`<td class="${d.cols[i].today?'today':''}">${v}</td>`).join("")}<td class="${grandCls}">${d.grand}</td></tr>`;
+  }
+
+  function weekShareableHTML(d){
+    const sn=d.storeNumber;
+    return `<div class="page">
+      <div class="head">
+        <div class="brandbox"><div class="logo">🍕</div><div>
+          <div class="name">Hungry Howie's</div><div class="sub">DOUGH BUILD · WEEK BUILD-TO${sn?" · STORE "+esc(sn):""}</div></div></div>
+        <div class="meta"><div class="d">${esc(d.meta)}</div><div class="by">${esc(d.by)}</div></div>
+      </div>
+      <div class="strip">
+        <div class="kpis">
+          <div class="kpi"><b>${d.kpis.perWeek}</b><span>Trays / week</span></div>
+          <div class="kpi"><b>${esc(d.kpis.busiestDay)}</b><span>Busiest day · ${d.kpis.busiestVal}</span></div>
+          <div class="kpi"><b>${d.kpis.avg}</b><span>Avg / day</span></div>
+        </div>
+        <div class="prog">Ball: Jr 6oz · Sm 9oz · Md 14oz · Lg 18oz · Xl 27oz</div>
+      </div>
+      <div class="body week-body">
+        <table class="week-t">
+          ${weekColgroup(d)}
+          ${weekHead(d)}
+          <tbody>${weekBodyRows(d)}
+            ${weekTotRow(d,"grand")}
+          </tbody>
+        </table>
+      </div>
+      <div class="foot">
+        <div class="legend"><i>Highlighted column = today</i></div>
+        <span>Generated by Howie Helper · ${esc(d.stamp)}</span>
+      </div>
+    </div>`;
+  }
+
+  function weekPrintableHTML(d){
+    const sn=d.storeNumber;
+    return `<div class="page">
+      <div class="hd">
+        <div class="t">WEEK BUILD-TO<small>HOWIE HELPER · DOUGH BUILD${sn?" · STORE "+esc(sn):""}</small></div>
+        <div class="m"><b>${esc(d.meta)}</b><br>${esc(d.by)}</div>
+      </div>
+      <table class="week-t">
+        ${weekColgroup(d)}
+        ${weekHead(d)}
+        <tbody>${weekBodyRows(d)}
+          ${weekTotRow(d,"tt")}
+        </tbody>
+      </table>
+      <div class="ft"><span><b>Build-to</b> = target trays proofed per day</span><span><b>Shaded column</b> = today</span></div>
+    </div>`;
+  }
+
+  /* ---------- Share / print / save plumbing (ported from Schedule) ---------- */
+  async function downloadOrShare(blob, ext){
+    if(!blob){ toast("Could not create file"); return; }
+    const name=expName(ext), type=blob.type||(ext==="pdf"?"application/pdf":"image/png");
+    try{
+      const file=new File([blob],name,{type});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"Dough Build"}); return;
+      }
+    }catch(e){ /* fall through to download */ }
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast(ext.toUpperCase()+" saved");
+  }
+  function savePdf(canvas, orientation){
+    try{
+      const { jsPDF }=window.jspdf;
+      const orient=orientation==="portrait"?"portrait":"landscape";
+      const pdf=new jsPDF({unit:"pt",format:"letter",orientation:orient});
+      const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+      let iw=pw, ih=pw*canvas.height/canvas.width;
+      if(ih>ph){ ih=ph; iw=ph*canvas.width/canvas.height; }
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pw-iw)/2,(ph-ih)/2,iw,ih);
+      downloadOrShare(pdf.output("blob"),"pdf");
+    }catch(e){ toast("Could not create PDF"); }
+  }
+  function openExportPreview(canvas, orientation){
+    overlayRoot.innerHTML=`
+      <div class="overlay" id="dbxOv">
+        <div class="pad">
+          <div class="padhead"><div class="l">Dough Build — Export</div></div>
+          <div class="hhx-preview"><img src="${canvas.toDataURL("image/png")}" alt="Export preview"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn good" id="dbxPng">Save PNG</button>
+            <button class="btn ghost" id="dbxPdf">Save PDF</button>
+          </div>
+          <div class="btn-row" style="margin-top:10px">
+            <button class="btn ghost" id="dbxPrint">Print sheet</button>
+            <button class="btn ghost" id="dbxClose">Close</button>
+          </div>
+        </div>
+      </div>`;
+    const close=()=>{ overlayRoot.innerHTML=""; };
+    document.getElementById("dbxOv").onclick=e=>{ if(e.target.id==="dbxOv") close(); };
+    document.getElementById("dbxClose").onclick=close;
+    document.getElementById("dbxPng").onclick=()=>canvas.toBlob(b=>downloadOrShare(b,"png"),"image/png");
+    document.getElementById("dbxPdf").onclick=()=>savePdf(canvas, orientation);
+    document.getElementById("dbxPrint").onclick=()=>{ close(); printSheet(expSheet); };
+  }
+  async function shareSheet(sheet){
+    expSheet = sheet==="week" ? "week" : "today";
+    const orient = expSheet==="week" ? "landscape" : "portrait";
+    overlayRoot.innerHTML="";                    // close chooser
+    const data=exportData();
+    const host=document.createElement("div");
+    host.className="dbx "+expSheet;
+    host.style.cssText="position:absolute;left:-10000px;top:0;";
+    host.innerHTML = expSheet==="week" ? weekShareableHTML(data.week) : todayShareableHTML(data.today);
+    document.body.appendChild(host);
+    let canvas;
+    try{
+      canvas=await html2canvas(host.querySelector(".page"),
+        {scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+    }catch(e){ host.remove(); toast("Could not create image"); return; }
+    host.remove();
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    if(blob){
+      try{
+        const file=new File([blob],expName("png"),{type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:"Dough Build"}); return;
+        }
+      }catch(e){ /* cancelled/unsupported → saveable preview */ }
+    }
+    openExportPreview(canvas, orient);
+  }
+  function printSheet(sheet){
+    expSheet = sheet==="week" ? "week" : "today";
+    const orient = expSheet==="week" ? "landscape" : "portrait";
+    overlayRoot.innerHTML="";                    // close chooser
+    const data=exportData();
+    const host=document.createElement("div");
+    host.id="hhPrintHost"; host.className="dbp "+expSheet;
+    host.innerHTML = expSheet==="week" ? weekPrintableHTML(data.week) : todayPrintableHTML(data.today);
+    document.body.appendChild(host);
+    // The shared @media print block hard-codes @page; inject the chosen orientation.
+    const pageStyle=document.createElement("style"); pageStyle.id="dbPageStyle";
+    pageStyle.textContent=`@media print{ @page{ size:letter ${orient}; margin:0.4in; } }`;
+    document.head.appendChild(pageStyle);
+    document.body.classList.add("hh-printing");
+    let cleaned=false;
+    const cleanup=()=>{ if(cleaned) return; cleaned=true;
+      host.remove(); pageStyle.remove(); document.body.classList.remove("hh-printing");
+      window.removeEventListener("afterprint",cleanup); };
+    window.addEventListener("afterprint",cleanup);
+    setTimeout(()=>{ try{ window.print(); }catch(e){} }, 60);
+    setTimeout(cleanup, 60000);
+  }
+  function openExportChooser(){
+    let sheet="today";
+    function paint(){
+      overlayRoot.innerHTML=`
+        <div class="overlay" id="dbExpOv">
+          <div class="pad">
+            <div class="padhead"><div class="l">Export · Dough Build</div></div>
+            <p style="color:var(--muted);font-size:13px;margin:0 0 12px;">Share a branded image to the group chat, or print / save a PDF.</p>
+            <div class="schseg">
+              <button data-sheet="today" class="${sheet==='today'?'on':''}">Today's build</button>
+              <button data-sheet="week" class="${sheet==='week'?'on':''}">Week build-to</button>
+            </div>
+            <div class="btn-row" style="margin-top:12px"><button class="btn good" id="dbShareBtn">📷&nbsp; Shareable image</button></div>
+            <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="dbPrintBtn">🖨&nbsp; Printable / PDF</button></div>
+            <div class="btn-row" style="margin-top:10px"><button class="btn ghost" id="dbExpClose">Cancel</button></div>
+          </div>
+        </div>`;
+      const close=()=>{ overlayRoot.innerHTML=""; };
+      document.getElementById("dbExpOv").onclick=e=>{ if(e.target.id==="dbExpOv") close(); };
+      document.getElementById("dbExpClose").onclick=close;
+      overlayRoot.querySelectorAll(".schseg button").forEach(b=>{
+        b.onclick=()=>{ sheet=b.getAttribute("data-sheet"); paint(); };
+      });
+      document.getElementById("dbShareBtn").onclick=()=>shareSheet(sheet);
+      document.getElementById("dbPrintBtn").onclick=()=>printSheet(sheet);
+    }
+    paint();
+  }
+
   /* ---------- Self-test (per-day math, step, migration, half formatting) ---------- */
   function _selftest(){
     const savedBT=state.buildTo, savedOH=onHand, savedSel=selectedDay, savedHS=state.halfStep;
@@ -4154,6 +4611,23 @@ const DoughBuild = (function(){
         const w=blankWeek(); for(let d=0;d<7;d++) w[d]={...one};
         return w[0].xl===0.5 && w[6].md===2 && w[3].jr===1; })();
       state.halfStep=false; const s1=step(); state.halfStep=true; const s2=step();
+      // export data model — self-contained fixture (restores selectedDay/onHand/buildTo inline)
+      const exFix=(function(){
+        const sb=state.buildTo, so=onHand, ss=selectedDay;
+        state.buildTo=blankWeek();
+        state.buildTo[4]={jr:2,sm:4,md:7,lg:11,xl:4};    // Fri — the Today sheet
+        state.buildTo[0]={jr:1,sm:2,md:0,lg:3,xl:0};     // extra days so the Week grid has spread
+        state.buildTo[5]={jr:0,sm:1,md:2,lg:0,xl:1};
+        onHand={jr:1,sm:1,md:3,lg:2.5,xl:5}; selectedDay=4;
+        const t=exportData().today, w=exportData().week;
+        let byDay=0, bySize=0;                           // Σ per-day  vs  Σ per-size (must match grand)
+        for(let d=0;d<7;d++) for(const [k] of SIZES) byDay+=Number(state.buildTo[d][k])||0;
+        for(const [k] of SIZES) for(let d=0;d<7;d++) bySize+=Number(state.buildTo[d][k])||0;
+        const res={ toBuild:t.totals.toBuild, buildTo:t.totals.buildTo, onHand:t.totals.onHand,
+                    sub:t.sub, grand:w.grand, byDay, bySize };
+        state.buildTo=sb; onHand=so; selectedDay=ss;
+        return res;
+      })();
       const checks=[
         ["needed Build Wed (lg)", needed("lg"),  2.5],
         ["needed Set Wed (md)",   needed("md"),  0],
@@ -4166,6 +4640,12 @@ const DoughBuild = (function(){
         ["fmtHalf 2.5", fmtHalf(2.5)==="2½"?1:0, 1],
         ["fmtHalf 3",   fmtHalf(3)==="3"?1:0,   1],
         ["fmtHalf 0.5", fmtHalf(0.5)==="½"?1:0, 1],
+        ["export today trays-to-build", exFix.toBuild==="16½"?1:0, 1],
+        ["export today build-to total", exFix.buildTo==="28"?1:0, 1],
+        ["export today on-hand total",  exFix.onHand==="12½"?1:0, 1],
+        ["export today overstock label", /^1 size overstocked$/.test(exFix.sub)?1:0, 1],
+        ["export week grand = Σ per-day", exFix.grand===fmtHalf(exFix.byDay)?1:0, 1],
+        ["export week Σ per-day = Σ per-size", approx(exFix.byDay, exFix.bySize)?1:0, 1],
       ];
       let ok=true;
       for(const [name,got,exp] of checks){
@@ -4177,7 +4657,7 @@ const DoughBuild = (function(){
   }
   try{ _selftest(); }catch(e){}
 
-  return { STORE, render, reset, reload, _selftest };
+  return { STORE, render, reset, reload, exportData, _selftest };
 })();
 
 const TOOL_VIEWS = {
